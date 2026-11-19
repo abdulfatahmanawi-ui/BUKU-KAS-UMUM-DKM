@@ -12,6 +12,8 @@
   let client = null;
   let transactions = [];
   let fundsReady = false;
+  let reportDataReady = false;
+  const fundNames = {"DKM":"Kas DKM","PEMBANGUNAN":"Kas Pembangunan","PHBI":"Kas PHBI"};
   let isAdmin = false;
   let currentUser = null;
   let toastTimer = null;
@@ -356,6 +358,7 @@
 
   async function loadTransactions() {
     if (!client) return;
+    reportDataReady = false;
     setConnection("Memuat data...", "wait");
     const columns = "id, date, description, category, kind, amount, created_at";
     const query = async (fields) => {
@@ -415,6 +418,7 @@
       transaction_date: row.date,
       type: kindToType(row.kind)
     }));
+    reportDataReady = true;
     setConnection("Database online", "online");
     populateMonthFilter();
     renderAll();
@@ -861,6 +865,17 @@
       doc.save(`Kwitansi_${incoming ? "Pemasukan" : "Pengeluaran"}_${safeName}_${receiptDate}.pdf`);
     }
   async function exportPdf() {
+    const fund = $("fundFilter").value;
+    if (!Object.hasOwn(fundNames, fund)) {
+      showToast("Pilih Kas DKM, Kas Pembangunan, atau Kas PHBI pada filter Kas.");
+      $("fundFilter").focus();
+      return;
+    }
+    if (!reportDataReady || (!fundsReady && fund !== "DKM")) {
+      showToast("Data kas belum tersedia untuk mencetak laporan.");
+      return;
+    }
+    const fundName = fundNames[fund];
     const monthValue = $("monthFilter").value;
     if (monthValue === "all") {
       showToast("Pilih satu bulan pada filter Periode sebelum mengunduh laporan bulanan.");
@@ -876,8 +891,7 @@
     }
 
     if (!window.jspdf || !window.jspdf.jsPDF) {
-      showToast("Library PDF belum termuat. Gunakan fitur cetak browser.");
-      window.print();
+      showToast("Komponen PDF belum termuat. Silakan muat ulang aplikasi.");
       return;
     }
 
@@ -885,7 +899,8 @@
     const monthStart = `${monthValue}-01`;
     const monthEndDay = new Date(year, month, 0).getDate();
     const monthEnd = `${monthValue}-${String(monthEndDay).padStart(2, "0")}`;
-    const monthItems = transactions.filter((item) => {
+    const fundItems = transactions.filter((item) => item.fund === fund);
+    const monthItems = fundItems.filter((item) => {
       const date = String(item.transaction_date || "");
       return date >= monthStart && date <= monthEnd;
     }).sort((a, b) => {
@@ -893,11 +908,6 @@
       if (dateOrder !== 0) return dateOrder;
       return String(a.created_at || "").localeCompare(String(b.created_at || ""));
     });
-
-    if (!monthItems.length) {
-      showToast("Tidak ada transaksi pada bulan yang dipilih.");
-      return;
-    }
 
     if (typeof window.jspdf.jsPDF !== "function") {
       showToast("Library PDF belum siap. Silakan muat ulang aplikasi.");
@@ -971,10 +981,10 @@
       .trim();
     const reportNameLine = `${mosqueName} ${mosqueLocation}`.toUpperCase();
 
-    // Saldo awal dihitung dari seluruh transaksi sebelum bulan laporan.
+    // Saldo awal hanya memakai transaksi kas yang dipilih sebelum bulan laporan.
     // Filter jenis dan pencarian di halaman tidak mengurangi isi laporan bulanan.
-    const openingBalance = transactions.reduce((balance, item) => {
-      if (String(item.transaction_date || "") >= monthStart) return balance;
+    const openingBalance = fundItems.reduce((balance, item) => {
+      if (!item.transaction_date || item.transaction_date >= monthStart) return balance;
       const amount = Number(item.amount || 0);
       if (item.type === "MASUK") return balance + amount;
       if (item.type === "KELUAR") return balance - amount;
@@ -1020,7 +1030,7 @@
     doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
-    doc.text("LAPORAN KAS DKM", pageWidth / 2, headerBottomY + 7, { align: "center" });
+    doc.text("LAPORAN " + fundName.toUpperCase(), pageWidth / 2, headerBottomY + 7, { align: "center" });
     doc.text(reportNameLine, pageWidth / 2, headerBottomY + 13.5, {
       align: "center",
       maxWidth: contentWidth
@@ -1137,13 +1147,13 @@
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7);
       doc.setTextColor(0, 0, 0);
-      doc.text("DKM Masjid Jami Al-Ikhlas · Laporan Kas", margin, pageHeight - 5);
+      doc.text("DKM Masjid Jami Al-Ikhlas · Laporan " + fundName, margin, pageHeight - 5);
       doc.text(`Halaman ${page} dari ${pageCount}`, pageWidth - margin, pageHeight - 5, { align: "right" });
     }
 
     const safePeriod = period.replace(/[^a-z0-9-]/gi, "_");
     const safeName = String(mosqueProfile.name || "Masjid").replace(/[^a-z0-9-]/gi, "_");
-    doc.save(`Laporan_Kas_Bulanan_${safeName}_${safePeriod}.pdf`);
+    doc.save(`Laporan_${fundName.replaceAll(" ", "_")}_${safeName}_${safePeriod}.pdf`);
   }
 
   async function login(event) {
@@ -1508,10 +1518,18 @@
       }
     });
     $("cancelEditBtn").addEventListener("click", resetTransactionForm);
-    $("fundFilter").addEventListener("change", renderTable);
+    function updateReportButton() {
+      const name = fundNames[$("fundFilter").value];
+      $("exportPdfBtn").textContent = name ? "Unduh PDF " + name : "Unduh PDF per Kas";
+    }
+    $("fundFilter").addEventListener("change", () => {
+      updateReportButton();
+      renderTable();
+    });
     document.querySelectorAll("[data-kas]").forEach((link) => {
       link.addEventListener("click", () => {
         $("fundFilter").value = link.dataset.kas;
+        updateReportButton();
         if (fundsReady && !$("transactionId").value) $("transactionFund").value = link.dataset.kas;
         renderTable();
       });
