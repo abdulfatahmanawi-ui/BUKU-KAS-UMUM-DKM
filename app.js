@@ -148,6 +148,15 @@
   function renderMosqueProfile() {
     $("brandName").textContent = mosqueProfile.name || "Masjid";
     $("brandSubtitle").textContent = profileAddressLine(mosqueProfile);
+    $("publicProfileName").textContent = mosqueProfile.name || "Masjid";
+    $("publicProfileAddress").textContent = profileAddressLine(mosqueProfile) || "Alamat belum tersedia";
+    for (const [id, value] of [
+      ["publicProfilePhone", mosqueProfile.phone],
+      ["publicProfileEmail", mosqueProfile.email]
+    ]) {
+      $(id).textContent = value || "";
+      $(id + "Row").hidden = !value;
+    }
     $("footerBrandName").textContent = mosqueProfile.name || "Masjid";
     $("publicDescription").textContent = mosqueProfile.description ||
       "Informasi kas masjid disediakan untuk membantu jamaah memantau pengelolaan keuangan.";
@@ -1429,7 +1438,22 @@
     window.setInterval(renderLocalPrayerWidget, 1000);
   }
 
+  function renderPage() {
+    const requested = window.location.hash.slice(1);
+    const selected = ["dashboard", "profil", "transaksi"].includes(requested)
+      ? requested : "dashboard";
+
+    document.querySelectorAll("[data-page]").forEach((page) => {
+      page.hidden = page.id !== selected;
+    });
+    document.querySelectorAll(".section-nav a").forEach((link) => {
+      if (link.hash === "#" + selected) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    });
+  }
+
   function bindEvents() {
+    window.addEventListener("hashchange", renderPage);
     $("loginOpenBtn").addEventListener("click", () => {
       setLoginMessage("");
       $("loginDialog").showModal();
@@ -1480,6 +1504,8 @@
     $("reportPrintDate").value = getJakartaDateInputValue();
     updatePartyNameLabel();
     bindEvents();
+    renderPage();
+    renderMosqueProfile();
     initLocalPrayerWidget();
 
     if (!configured) {

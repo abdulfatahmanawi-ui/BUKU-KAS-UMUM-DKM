@@ -32,11 +32,17 @@
   </header>
 
   <main class="container">
+    <nav class="section-nav" aria-label="Menu utama">
+      <a href="#dashboard" aria-current="page"><span aria-hidden="true">▦</span> Dashboard</a>
+      <a href="#profil"><span aria-hidden="true">◇</span> Profil</a>
+      <a href="#transaksi"><span aria-hidden="true">⇄</span> Transaksi</a>
+    </nav>
+    <div id="dashboard" data-page>
     <section class="intro-row">
       <div>
         <p class="eyebrow green">TRANSPARANSI DAN AMANAH</p>
-        <h2>Informasi Kas Masjid</h2>
-        <p class="muted">Ringkasan keuangan dan riwayat transaksi kas masjid yang dapat dipantau oleh masyarakat.</p>
+        <h2>Dashboard Kas Masjid</h2>
+        <p class="muted">Pantau pemasukan, pengeluaran, dan saldo kas masjid.</p>
       </div>
       <div id="adminBadge" class="admin-badge hidden">Mode Pengurus Aktif</div>
     </section>
@@ -97,6 +103,72 @@
       </p>
     </section>
 
+    </div>
+    <div id="profil" data-page hidden>
+    <section class="panel profile-overview">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow green">PROFIL DKM</p>
+          <h2 id="publicProfileName">Masjid Jami Al-Ikhlas</h2>
+        </div>
+      </div>
+      <dl class="profile-details">
+        <div><dt>Alamat</dt><dd id="publicProfileAddress"></dd></div>
+        <div id="publicProfilePhoneRow" hidden><dt>Telepon / WhatsApp</dt><dd id="publicProfilePhone"></dd></div>
+        <div id="publicProfileEmailRow" hidden><dt>Email</dt><dd id="publicProfileEmail"></dd></div>
+      </dl>
+    </section>
+    <section class="public-note">
+      <strong>Komitmen transparansi.</strong>
+      <span id="publicDescription">Informasi ini disediakan untuk membantu jamaah memantau pengelolaan kas masjid. Data transaksi dikelola oleh pengurus yang berwenang.</span>
+    </section>
+    <section id="profilePanel" class="panel admin-panel hidden">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow green">IDENTITAS DAN KOP LAPORAN</p>
+          <h2>Pengaturan Profil Masjid</h2>
+        </div>
+        <span class="private-note">Khusus administrator</span>
+      </div>
+
+      <form id="profileForm">
+        <div class="profile-editor-grid">
+          <div class="profile-photo-card">
+            <div class="profile-preview-frame">
+              <img id="profileLogoPreview" class="profile-logo-preview hidden" alt="Pratinjau logo masjid">
+              <div id="profileLogoPlaceholder" class="profile-logo-placeholder">DKM</div>
+            </div>
+            <label class="file-label">
+              Foto atau logo masjid
+              <input id="profileLogoFile" type="file" accept="image/png,image/jpeg,image/webp">
+            </label>
+            <label class="checkbox-label">
+              <input id="removeProfileLogo" type="checkbox">
+              Hapus foto/logo saat disimpan
+            </label>
+            <p class="help-text">Format PNG, JPG, atau WebP. Ukuran maksimal 2 MB. Foto akan tampil pada header aplikasi dan kop laporan PDF.</p>
+          </div>
+
+          <div class="profile-fields">
+            <label>Nama masjid<input id="profileName" type="text" maxlength="120" required></label>
+            <label>Alamat / dusun / RW<input id="profileAddress" type="text" maxlength="180" required></label>
+            <label>Desa / kelurahan<input id="profileVillage" type="text" maxlength="120"></label>
+            <label>Kecamatan<input id="profileDistrict" type="text" maxlength="120"></label>
+            <label>Kabupaten / kota<input id="profileRegency" type="text" maxlength="120"></label>
+            <label>Nomor telepon / WhatsApp<input id="profilePhone" type="tel" maxlength="40" placeholder="Opsional"></label>
+            <label>Email masjid<input id="profileEmail" type="email" maxlength="160" placeholder="Opsional"></label>
+            <label class="profile-description-field">Deskripsi / keterangan transparansi<textarea id="profileDescription" rows="3" maxlength="400"></textarea></label>
+          </div>
+        </div>
+        <div class="form-actions profile-form-actions">
+          <button id="saveProfileBtn" class="btn btn-primary" type="submit">Simpan Profil Masjid</button>
+          <span id="profileMessage" class="form-message" role="status"></span>
+        </div>
+      </form>
+    </section>
+
+    </div>
+    <div id="transaksi" data-page hidden>
     <section id="adminPanel" class="panel admin-panel hidden">
       <div class="section-heading">
         <div>
@@ -149,51 +221,6 @@
           <button id="saveTransactionBtn" class="btn btn-primary" type="submit">Simpan Transaksi</button>
           <button id="cancelEditBtn" class="btn btn-muted hidden" type="button">Batal Edit</button>
           <span id="formMessage" class="form-message" role="status"></span>
-        </div>
-      </form>
-    </section>
-
-    <section id="profilePanel" class="panel admin-panel hidden">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow green">IDENTITAS DAN KOP LAPORAN</p>
-          <h2>Pengaturan Profil Masjid</h2>
-        </div>
-        <span class="private-note">Khusus administrator</span>
-      </div>
-
-      <form id="profileForm">
-        <div class="profile-editor-grid">
-          <div class="profile-photo-card">
-            <div class="profile-preview-frame">
-              <img id="profileLogoPreview" class="profile-logo-preview hidden" alt="Pratinjau logo masjid">
-              <div id="profileLogoPlaceholder" class="profile-logo-placeholder">DKM</div>
-            </div>
-            <label class="file-label">
-              Foto atau logo masjid
-              <input id="profileLogoFile" type="file" accept="image/png,image/jpeg,image/webp">
-            </label>
-            <label class="checkbox-label">
-              <input id="removeProfileLogo" type="checkbox">
-              Hapus foto/logo saat disimpan
-            </label>
-            <p class="help-text">Format PNG, JPG, atau WebP. Ukuran maksimal 2 MB. Foto akan tampil pada header aplikasi dan kop laporan PDF.</p>
-          </div>
-
-          <div class="profile-fields">
-            <label>Nama masjid<input id="profileName" type="text" maxlength="120" required></label>
-            <label>Alamat / dusun / RW<input id="profileAddress" type="text" maxlength="180" required></label>
-            <label>Desa / kelurahan<input id="profileVillage" type="text" maxlength="120"></label>
-            <label>Kecamatan<input id="profileDistrict" type="text" maxlength="120"></label>
-            <label>Kabupaten / kota<input id="profileRegency" type="text" maxlength="120"></label>
-            <label>Nomor telepon / WhatsApp<input id="profilePhone" type="tel" maxlength="40" placeholder="Opsional"></label>
-            <label>Email masjid<input id="profileEmail" type="email" maxlength="160" placeholder="Opsional"></label>
-            <label class="profile-description-field">Deskripsi / keterangan transparansi<textarea id="profileDescription" rows="3" maxlength="400"></textarea></label>
-          </div>
-        </div>
-        <div class="form-actions profile-form-actions">
-          <button id="saveProfileBtn" class="btn btn-primary" type="submit">Simpan Profil Masjid</button>
-          <span id="profileMessage" class="form-message" role="status"></span>
         </div>
       </form>
     </section>
@@ -257,10 +284,7 @@
       </div>
     </section>
 
-    <section class="public-note">
-      <strong>Komitmen transparansi.</strong>
-      <span id="publicDescription">Informasi ini disediakan untuk membantu jamaah memantau pengelolaan kas masjid. Data transaksi dikelola oleh pengurus yang berwenang.</span>
-    </section>
+    </div>
   </main>
 
   <footer class="site-footer">

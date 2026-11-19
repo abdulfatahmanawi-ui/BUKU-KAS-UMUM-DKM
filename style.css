@@ -339,3 +339,20 @@ tbody tr:hover { background: #fbfcfa; }
     font-size: 24px;
   }
 }
+
+/* Navigasi halaman */
+[data-page][hidden], .profile-details [hidden] { display: none !important; }
+.section-nav { display: flex; gap: 6px; width: fit-content; max-width: 100%; padding: 5px; margin: 0 0 24px; border: 1px solid var(--line); border-radius: 12px; background: white; }
+.section-nav a { display: flex; align-items: center; gap: 7px; padding: 9px 16px; border-radius: 8px; color: var(--green-900); text-decoration: none; font-weight: 700; }
+.section-nav a:hover { background: var(--green-100); }
+.section-nav a[aria-current="page"] { background: var(--green-900); color: white; }
+.section-nav a:focus-visible { outline: 2px solid var(--green-700); outline-offset: 3px; }
+.section-nav a span { font-size: 16px; line-height: 1; }
+.profile-details { display: grid; gap: 14px; margin: 0; }
+.profile-details dt { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+.profile-details dd { margin: 0; overflow-wrap: anywhere; }
+#profil .public-note { margin-bottom: 18px; }
+@media (max-width: 480px) {
+  .section-nav { width: 100%; }
+  .section-nav a { flex: 1; justify-content: center; padding-inline: 5px; }
+}
