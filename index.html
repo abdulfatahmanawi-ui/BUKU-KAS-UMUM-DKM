@@ -47,25 +47,39 @@
       <div id="adminBadge" class="admin-badge hidden">Mode Pengurus Aktif</div>
     </section>
 
-    <section class="summary-grid" aria-label="Ringkasan kas">
-      <article class="summary-card income-card">
-        <div class="summary-label">Total Pemasukan</div>
-        <div id="totalIncome" class="summary-value">Rp0</div>
-        <div class="summary-foot">Akumulasi seluruh pemasukan</div>
-      </article>
-      <article class="summary-card expense-card">
-        <div class="summary-label">Total Pengeluaran</div>
-        <div id="totalExpense" class="summary-value">Rp0</div>
-        <div class="summary-foot">Akumulasi seluruh pengeluaran</div>
-      </article>
-      <article class="summary-card balance-card">
-        <div class="summary-label">Saldo Kas</div>
-        <div id="totalBalance" class="summary-value">Rp0</div>
-        <div class="summary-foot">Pemasukan dikurangi pengeluaran</div>
-      </article>
+    <section aria-label="Rincian kas">
+      <p id="fundStatus" class="muted" role="status">Memuat data kas…</p>
+      <div class="summary-grid fund-details">
+        <article class="summary-card fund-detail income-card">
+          <h3>Kas DKM</h3>
+          <dl>
+            <div><dt>Pemasukan</dt><dd id="DKMIncome">—</dd></div>
+            <div><dt>Pengeluaran</dt><dd id="DKMExpense">—</dd></div>
+            <div class="fund-balance"><dt>Saldo</dt><dd id="DKMBalance">—</dd></div>
+          </dl>
+          <a class="btn btn-outline" href="#transaksi" data-kas="DKM" aria-label="Lihat transaksi Kas DKM">Lihat transaksi</a>
+        </article>
+        <article class="summary-card fund-detail balance-card">
+          <h3>Kas Pembangunan</h3>
+          <dl>
+            <div><dt>Pemasukan</dt><dd id="PEMBANGUNANIncome">—</dd></div>
+            <div><dt>Pengeluaran</dt><dd id="PEMBANGUNANExpense">—</dd></div>
+            <div class="fund-balance"><dt>Saldo</dt><dd id="PEMBANGUNANBalance">—</dd></div>
+          </dl>
+          <a class="btn btn-outline" href="#transaksi" data-kas="PEMBANGUNAN" aria-label="Lihat transaksi Kas Pembangunan">Lihat transaksi</a>
+        </article>
+        <article class="summary-card fund-detail expense-card">
+          <h3>Kas PHBI</h3>
+          <dl>
+            <div><dt>Pemasukan</dt><dd id="PHBIIncome">—</dd></div>
+            <div><dt>Pengeluaran</dt><dd id="PHBIExpense">—</dd></div>
+            <div class="fund-balance"><dt>Saldo</dt><dd id="PHBIBalance">—</dd></div>
+          </dl>
+          <a class="btn btn-outline" href="#transaksi" data-kas="PHBI" aria-label="Lihat transaksi Kas PHBI">Lihat transaksi</a>
+        </article>
+      </div>
     </section>
 
-    <section aria-label="Kas kegiatan"><div class="section-heading"><h2>Kas Kegiatan</h2></div><p id="fundStatus" class="muted">Memuat data kas…</p><div class="summary-grid special-funds"><article class="summary-card balance-card"><h3>Kas Pembangunan</h3><div class="summary-label">Saldo</div><div class="summary-value" id="PEMBANGUNANBalance">—</div><p class="summary-label">Pemasukan <strong id="PEMBANGUNANIncome">—</strong> · Pengeluaran <strong id="PEMBANGUNANExpense">—</strong></p><a class="btn btn-outline" href="#transaksi" data-kas="PEMBANGUNAN">Lihat transaksi</a></article><article class="summary-card balance-card"><h3>Kas PHBI</h3><div class="summary-label">Saldo</div><div class="summary-value" id="PHBIBalance">—</div><p class="summary-label">Pemasukan <strong id="PHBIIncome">—</strong> · Pengeluaran <strong id="PHBIExpense">—</strong></p><a class="btn btn-outline" href="#transaksi" data-kas="PHBI">Lihat transaksi</a></article></div></section>
     <section class="panel prayer-widget-panel" aria-label="Jadwal salat harian berdasarkan koordinat Masjid Al-Ikhlas">
       <div class="section-heading prayer-widget-heading">
         <div>

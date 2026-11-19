@@ -456,21 +456,14 @@
     return { income, expense, balance: income - expense };
   }
 
-  function renderFundCards() {
-    for (const id of ["PEMBANGUNAN", "PHBI"]) {
+  function renderFundCards(dkmAvailable = false) {
+    for (const id of ["DKM", "PEMBANGUNAN", "PHBI"]) {
+      const available = fundsReady || (id === "DKM" && dkmAvailable);
       const totals = calculate(transactions.filter((item) => item.fund === id));
-      for (const [label, value] of Object.entries(totals)) {
-        $(id + label[0].toUpperCase() + label.slice(1)).textContent = fundsReady ? rupiah(value) : "—";
-      }
+      $(id + "Income").textContent = available ? rupiah(totals.income) : "—";
+      $(id + "Expense").textContent = available ? rupiah(totals.expense) : "—";
+      $(id + "Balance").textContent = available ? rupiah(totals.balance) : "—";
     }
-  }
-
-  function renderSummary() {
-    renderFundCards();
-    const totals = calculate(transactions);
-    $("totalIncome").textContent = rupiah(totals.income);
-    $("totalExpense").textContent = rupiah(totals.expense);
-    $("totalBalance").textContent = rupiah(totals.balance);
   }
 
   function renderTable() {
@@ -514,7 +507,7 @@
   }
 
   function renderAll() {
-    renderSummary();
+    renderFundCards(true);
     renderTable();
   }
 
