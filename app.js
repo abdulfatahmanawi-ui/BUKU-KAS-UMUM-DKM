@@ -1475,7 +1475,7 @@
 
   function renderPage() {
     const requested = window.location.hash.slice(1);
-    const selected = ["dashboard", "profil", "transaksi"].includes(requested)
+    const selected = ["dashboard", "jadwal-sholat", "profil", "transaksi"].includes(requested)
       ? requested : "dashboard";
 
     document.querySelectorAll("[data-page]").forEach((page) => {

@@ -34,6 +34,7 @@
   <main class="container">
     <nav class="section-nav" aria-label="Menu utama">
       <a href="#dashboard" aria-current="page"><span aria-hidden="true">▦</span> Dashboard</a>
+      <a href="#jadwal-sholat"><span aria-hidden="true">☪</span> Jadwal Sholat</a>
       <a href="#profil"><span aria-hidden="true">◇</span> Profil</a>
       <a href="#transaksi"><span aria-hidden="true">⇄</span> Transaksi</a>
     </nav>
@@ -47,39 +48,7 @@
       <div id="adminBadge" class="admin-badge hidden">Mode Pengurus Aktif</div>
     </section>
 
-    <section class="panel prayer-widget-panel prayer-widget-compact" aria-label="Jadwal salat harian berdasarkan koordinat Masjid Al-Ikhlas">
-      <div class="section-heading prayer-widget-heading">
-        <div>
-          <p class="eyebrow green">WAKTU IBADAH</p>
-          <h2>Jadwal Salat Hari Ini</h2>
-          <p class="prayer-widget-location">
-            Masjid Al-Ikhlas · Cikaum, Subang
-          </p>
-        </div>
-        <div class="prayer-date-badge"><span id="prayerTodayDate"></span><span>WIB</span></div>
-      </div>
 
-      <div class="prayer-next-card">
-        <div>
-          <span class="prayer-next-label">WAKTU SALAT BERIKUTNYA</span>
-          <strong id="prayerNextName">Memuat...</strong>
-          <span id="prayerNextDate" class="prayer-next-date"></span>
-        </div>
-        <div class="prayer-next-time-wrap">
-          <strong id="prayerNextTime" class="prayer-next-time">--:--</strong>
-          <span id="prayerCountdown" class="prayer-countdown">Menghitung waktu...</span>
-        </div>
-      </div>
-
-      <div id="prayerTimesGrid" class="prayer-times-grid" aria-live="polite">
-        <div class="prayer-loading">Menghitung jadwal salat berdasarkan koordinat masjid...</div>
-      </div>
-
-      <details class="prayer-method"><summary>Metode perhitungan</summary><p class="prayer-calculation-note">
-        Jadwal dihitung langsung di browser dari koordinat masjid, tanpa mengambil data dari Kementerian Agama atau layanan jadwal eksternal.
-        Parameter: Subuh 20°, Isya 18°, Asar metode Syafi'i, Duha 4,5°, dan Imsak 10 menit sebelum Subuh. Hasil dapat berbeda beberapa menit dari jadwal lembaga lain karena perbedaan parameter.
-      </p></details>
-    </section>
 
     <section aria-label="Rincian kas">
       <p id="fundStatus" class="muted" role="status">Memuat data kas…</p>
@@ -116,6 +85,48 @@
 
 
 
+    </div>
+    <div id="jadwal-sholat" data-page hidden>
+    <section class="intro-row">
+      <div>
+        <p class="eyebrow green">WAKTU IBADAH</p>
+        <h2>Jadwal Sholat</h2>
+        <p class="muted">Informasi waktu sholat harian Masjid Jami Al-Ikhlas.</p>
+      </div>
+    </section>
+    <section class="panel prayer-widget-panel" aria-label="Jadwal salat harian berdasarkan koordinat Masjid Al-Ikhlas">
+      <div class="section-heading prayer-widget-heading">
+        <div>
+          <p class="eyebrow green">WAKTU IBADAH</p>
+          <h2>Jadwal Salat Hari Ini</h2>
+          <p class="prayer-widget-location">
+            Masjid Al-Ikhlas · Cikaum, Subang
+          </p>
+        </div>
+        <div class="prayer-date-badge"><span id="prayerTodayDate"></span><span>WIB</span></div>
+      </div>
+
+      <div class="prayer-next-card">
+        <div>
+          <span class="prayer-next-label">WAKTU SALAT BERIKUTNYA</span>
+          <strong id="prayerNextName">Memuat...</strong>
+          <span id="prayerNextDate" class="prayer-next-date"></span>
+        </div>
+        <div class="prayer-next-time-wrap">
+          <strong id="prayerNextTime" class="prayer-next-time">--:--</strong>
+          <span id="prayerCountdown" class="prayer-countdown">Menghitung waktu...</span>
+        </div>
+      </div>
+
+      <div id="prayerTimesGrid" class="prayer-times-grid" aria-live="polite">
+        <div class="prayer-loading">Menghitung jadwal salat berdasarkan koordinat masjid...</div>
+      </div>
+
+      <details class="prayer-method"><summary>Metode perhitungan</summary><p class="prayer-calculation-note">
+        Jadwal dihitung langsung di browser dari koordinat masjid, tanpa mengambil data dari Kementerian Agama atau layanan jadwal eksternal.
+        Parameter: Subuh 20°, Isya 18°, Asar metode Syafi'i, Duha 4,5°, dan Imsak 10 menit sebelum Subuh. Hasil dapat berbeda beberapa menit dari jadwal lembaga lain karena perbedaan parameter.
+      </p></details>
+    </section>
     </div>
     <div id="profil" data-page hidden>
     <section class="panel profile-overview">
