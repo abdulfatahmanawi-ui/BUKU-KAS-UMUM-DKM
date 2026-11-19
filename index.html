@@ -65,6 +65,7 @@
       </article>
     </section>
 
+    <section aria-label="Kas kegiatan"><div class="section-heading"><h2>Kas Kegiatan</h2></div><p id="fundStatus" class="muted">Memuat data kas…</p><div class="summary-grid special-funds"><article class="summary-card balance-card"><h3>Kas Pembangunan</h3><div class="summary-label">Saldo</div><div class="summary-value" id="PEMBANGUNANBalance">—</div><p class="summary-label">Pemasukan <strong id="PEMBANGUNANIncome">—</strong> · Pengeluaran <strong id="PEMBANGUNANExpense">—</strong></p><a class="btn btn-outline" href="#transaksi" data-kas="PEMBANGUNAN">Lihat transaksi</a></article><article class="summary-card balance-card"><h3>Kas PHBI</h3><div class="summary-label">Saldo</div><div class="summary-value" id="PHBIBalance">—</div><p class="summary-label">Pemasukan <strong id="PHBIIncome">—</strong> · Pengeluaran <strong id="PHBIExpense">—</strong></p><a class="btn btn-outline" href="#transaksi" data-kas="PHBI">Lihat transaksi</a></article></div></section>
     <section class="panel prayer-widget-panel" aria-label="Jadwal salat harian berdasarkan koordinat Masjid Al-Ikhlas">
       <div class="section-heading prayer-widget-heading">
         <div>
@@ -178,7 +179,7 @@
         <span class="private-note">Khusus administrator</span>
       </div>
       <form id="transactionForm" class="transaction-form">
-        <input type="hidden" id="transactionId">
+        <input type="hidden" id="transactionId"><label>Jenis kas<select id="transactionFund" disabled><option value="DKM">Kas DKM</option><option value="PEMBANGUNAN">Kas Pembangunan</option><option value="PHBI">Kas PHBI</option></select></label>
         <label>
           Tanggal transaksi
           <input id="transactionDate" type="date" required>
@@ -240,7 +241,7 @@
         </div>
       </div>
 
-      <div class="filters">
+      <div class="filters"><label>Kas<select id="fundFilter"><option value="all">Semua kas</option><option value="DKM">Kas DKM</option><option value="PEMBANGUNAN">Kas Pembangunan</option><option value="PHBI">Kas PHBI</option></select></label>
         <label>
           Periode
           <select id="monthFilter">

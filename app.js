@@ -11,6 +11,7 @@
 
   let client = null;
   let transactions = [];
+  let fundsReady = false;
   let isAdmin = false;
   let currentUser = null;
   let toastTimer = null;
@@ -356,12 +357,29 @@
   async function loadTransactions() {
     if (!client) return;
     setConnection("Memuat data...", "wait");
-    const { data, error } = await client
-      .from("transactions")
-      .select("id, date, description, category, kind, amount, created_at")
-      .order("date", { ascending: false })
-      .order("created_at", { ascending: false })
-      .limit(5000);
+    const columns = "id, date, description, category, kind, amount, created_at";
+    const query = async (fields) => {
+      const rows = [];
+      for (let offset = 0; ; offset += 500) {
+        const { data, error } = await client.from("transactions").select(fields)
+          .order("date", { ascending: false })
+          .order("created_at", { ascending: false })
+          .order("id", { ascending: false })
+          .range(offset, offset + 499);
+        if (error) return { error };
+        rows.push(...data);
+        if (data.length < 500) return { data: rows };
+      }
+    };
+    let result = await query(columns + ", fund");
+    const missingFund = ["42703", "PGRST204"].includes(result.error?.code);
+    if (missingFund) result = await query(columns);
+    const { data, error } = result;
+    fundsReady = !error && !missingFund;
+    $("transactionFund").disabled = !fundsReady;
+    $("fundStatus").hidden = fundsReady;
+    $("fundStatus").textContent = error ? "Data kas gagal dimuat." : "Kas Pembangunan dan Kas PHBI menunggu migrasi Supabase.";
+    if (error) renderFundCards();
 
     if (error) {
       console.error(error);
@@ -393,6 +411,7 @@
       // Nama pihak kwitansi hanya diambil untuk pengurus dari tabel privat terpisah.
       party_name: receiptNames.get(row.id) || "",
       // Normalisasi skema Supabase yang sudah ada ke format internal aplikasi.
+      fund: row.fund || "DKM",
       transaction_date: row.date,
       type: kindToType(row.kind)
     }));
@@ -416,6 +435,7 @@
   }
 
   function getFilteredTransactions() {
+    const fund = $("fundFilter").value;
     const month = $("monthFilter").value;
     const type = $("typeFilter").value;
     const search = $("searchInput").value.trim().toLowerCase();
@@ -426,7 +446,7 @@
       const searchMatch = !search ||
         String(item.description || "").toLowerCase().includes(search) ||
         String(item.category || "").toLowerCase().includes(search);
-      return monthMatch && typeMatch && searchMatch;
+      return (fund === "all" || item.fund === fund) && monthMatch && typeMatch && searchMatch;
     });
   }
 
@@ -436,7 +456,17 @@
     return { income, expense, balance: income - expense };
   }
 
+  function renderFundCards() {
+    for (const id of ["PEMBANGUNAN", "PHBI"]) {
+      const totals = calculate(transactions.filter((item) => item.fund === id));
+      for (const [label, value] of Object.entries(totals)) {
+        $(id + label[0].toUpperCase() + label.slice(1)).textContent = fundsReady ? rupiah(value) : "—";
+      }
+    }
+  }
+
   function renderSummary() {
+    renderFundCards();
     const totals = calculate(transactions);
     $("totalIncome").textContent = rupiah(totals.income);
     $("totalExpense").textContent = rupiah(totals.expense);
@@ -508,6 +538,7 @@
     $("transactionDate").value = item.transaction_date;
     $("transactionType").value = item.type === "KELUAR" ? "KELUAR" : "MASUK";
     $("transactionCategory").value = item.category;
+    $("transactionFund").value = item.fund;
     $("transactionAmount").value = item.amount;
     $("transactionDescription").value = item.description;
     $("transactionPartyName").value = item.party_name || "";
@@ -530,6 +561,7 @@
       amount: Number($("transactionAmount").value),
       description: $("transactionDescription").value.trim()
     };
+    if (fundsReady) payload.fund = $("transactionFund").value;
     const partyName = $("transactionPartyName").value.trim();
 
     if (!payload.date || !payload.description || !partyName || !Number.isFinite(payload.amount) || payload.amount <= 0) {
@@ -1483,6 +1515,14 @@
       }
     });
     $("cancelEditBtn").addEventListener("click", resetTransactionForm);
+    $("fundFilter").addEventListener("change", renderTable);
+    document.querySelectorAll("[data-kas]").forEach((link) => {
+      link.addEventListener("click", () => {
+        $("fundFilter").value = link.dataset.kas;
+        if (fundsReady && !$("transactionId").value) $("transactionFund").value = link.dataset.kas;
+        renderTable();
+      });
+    });
     $("monthFilter").addEventListener("change", renderTable);
     $("typeFilter").addEventListener("change", renderTable);
     $("searchInput").addEventListener("input", renderTable);
@@ -1510,6 +1550,7 @@
 
     if (!configured) {
       setConnection("Konfigurasi diperlukan", "error");
+      $("fundStatus").textContent = "Konfigurasi Supabase diperlukan.";
       $("transactionTableBody").innerHTML =
         `<tr><td colspan="6" class="empty-state">Isi SUPABASE_URL dan SUPABASE_ANON_KEY pada file config.js untuk menghubungkan database.</td></tr>`;
       return;
@@ -1517,6 +1558,7 @@
 
     if (!window.supabase || !window.supabase.createClient) {
       setConnection("Library gagal dimuat", "error");
+      $("fundStatus").textContent = "Data kas gagal dimuat.";
       showToast("Tidak dapat memuat Supabase. Periksa koneksi internet.");
       return;
     }
