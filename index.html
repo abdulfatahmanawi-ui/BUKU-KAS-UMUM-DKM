@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#123c2d">
+  <meta name="description" content="Sistem Informasi Kas DKM Masjid Jami Al-Ikhlas">
+  <title>Kas DKM | Masjid Jami Al-Ikhlas</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script src="config.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-mark" id="brandMark" aria-hidden="true">DKM</div>
+        <div>
+          <p class="eyebrow">SISTEM INFORMASI KEUANGAN</p>
+          <h1 id="brandName">Masjid Jami Al-Ikhlas</h1>
+          <p class="subtitle" id="brandSubtitle">Dusun Pokek RW 004 · Desa Kawunganten · Kecamatan Cikaum · Kabupaten Subang</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span id="connectionStatus" class="status-pill status-wait">Menghubungkan...</span>
+        <button id="loginOpenBtn" class="btn btn-light" type="button">Login Pengurus</button>
+        <button id="logoutBtn" class="btn btn-light hidden" type="button">Keluar</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="intro-row">
+      <div>
+        <p class="eyebrow green">TRANSPARANSI DAN AMANAH</p>
+        <h2>Informasi Kas Masjid</h2>
+        <p class="muted">Ringkasan keuangan dan riwayat transaksi kas masjid yang dapat dipantau oleh masyarakat.</p>
+      </div>
+      <div id="adminBadge" class="admin-badge hidden">Mode Pengurus Aktif</div>
+    </section>
+
+    <section class="summary-grid" aria-label="Ringkasan kas">
+      <article class="summary-card income-card">
+        <div class="summary-label">Total Pemasukan</div>
+        <div id="totalIncome" class="summary-value">Rp0</div>
+        <div class="summary-foot">Akumulasi seluruh pemasukan</div>
+      </article>
+      <article class="summary-card expense-card">
+        <div class="summary-label">Total Pengeluaran</div>
+        <div id="totalExpense" class="summary-value">Rp0</div>
+        <div class="summary-foot">Akumulasi seluruh pengeluaran</div>
+      </article>
+      <article class="summary-card balance-card">
+        <div class="summary-label">Saldo Kas</div>
+        <div id="totalBalance" class="summary-value">Rp0</div>
+        <div class="summary-foot">Pemasukan dikurangi pengeluaran</div>
+      </article>
+    </section>
+
+    <section class="panel prayer-widget-panel" aria-label="Jadwal salat harian berdasarkan koordinat Masjid Al-Ikhlas">
+      <div class="section-heading prayer-widget-heading">
+        <div>
+          <p class="eyebrow green">WAKTU IBADAH</p>
+          <h2>Jadwal Salat Hari Ini</h2>
+          <p class="prayer-widget-location">
+            Masjid Al-Ikhlas · Kaunganten, Kecamatan Cikaum, Kabupaten Subang, Jawa Barat
+          </p>
+          <p class="prayer-coordinate-note">
+            Koordinat: -6.4838794, 107.7410055 · Zona waktu WIB
+          </p>
+        </div>
+        <span class="prayer-source-badge">Hitung astronomis lokal</span>
+      </div>
+
+      <div class="prayer-next-card">
+        <div>
+          <span class="prayer-next-label">WAKTU SALAT BERIKUTNYA</span>
+          <strong id="prayerNextName">Memuat...</strong>
+          <span id="prayerNextDate" class="prayer-next-date"></span>
+        </div>
+        <div class="prayer-next-time-wrap">
+          <strong id="prayerNextTime" class="prayer-next-time">--:--</strong>
+          <span id="prayerCountdown" class="prayer-countdown">Menghitung waktu...</span>
+        </div>
+      </div>
+
+      <div id="prayerTodayDate" class="prayer-today-date"></div>
+      <div id="prayerTimesGrid" class="prayer-times-grid" aria-live="polite">
+        <div class="prayer-loading">Menghitung jadwal salat berdasarkan koordinat masjid...</div>
+      </div>
+
+      <p class="prayer-calculation-note">
+        Jadwal dihitung langsung di browser dari koordinat masjid, tanpa mengambil data dari Kementerian Agama atau layanan jadwal eksternal.
+        Parameter: Subuh 20°, Isya 18°, Asar metode Syafi'i, Duha 4,5°, dan Imsak 10 menit sebelum Subuh. Hasil dapat berbeda beberapa menit dari jadwal lembaga lain karena perbedaan parameter.
+      </p>
+    </section>
+
+    <section id="adminPanel" class="panel admin-panel hidden">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow green">PENGELOLAAN DATA</p>
+          <h2 id="formTitle">Tambah Transaksi</h2>
+        </div>
+        <span class="private-note">Khusus administrator</span>
+      </div>
+      <form id="transactionForm" class="transaction-form">
+        <input type="hidden" id="transactionId">
+        <label>
+          Tanggal transaksi
+          <input id="transactionDate" type="date" required>
+        </label>
+        <label>
+          Jenis transaksi
+          <select id="transactionType" required>
+            <option value="MASUK">Pemasukan</option>
+            <option value="KELUAR">Pengeluaran</option>
+          </select>
+        </label>
+        <label>
+          Kategori
+          <select id="transactionCategory" required>
+            <option value="Infak">Infak</option>
+            <option value="Sedekah">Sedekah</option>
+            <option value="Donasi Jamaah">Donasi Jamaah</option>
+            <option value="Wakaf">Wakaf</option>
+            <option value="Operasional">Operasional</option>
+            <option value="Listrik dan Air">Listrik dan Air</option>
+            <option value="Kebersihan">Kebersihan</option>
+            <option value="Pembangunan">Pembangunan</option>
+            <option value="Kegiatan Masjid">Kegiatan Masjid</option>
+            <option value="Lainnya">Lainnya</option>
+          </select>
+        </label>
+        <label>
+          Nominal (Rp)
+          <input id="transactionAmount" type="number" min="1" step="1" placeholder="Contoh: 150000" required>
+        </label>
+        <label class="description-field">
+          Keterangan
+          <input id="transactionDescription" type="text" maxlength="180" placeholder="Contoh: Infak Jumat pekan pertama" required>
+        </label>
+        <label class="party-name-field">
+          <span id="partyNameLabel">Nama penyetor</span>
+          <input id="transactionPartyName" type="text" maxlength="160" placeholder="Nama orang yang menyetorkan uang" autocomplete="off" required>
+        </label>
+        <div class="form-actions">
+          <button id="saveTransactionBtn" class="btn btn-primary" type="submit">Simpan Transaksi</button>
+          <button id="cancelEditBtn" class="btn btn-muted hidden" type="button">Batal Edit</button>
+          <span id="formMessage" class="form-message" role="status"></span>
+        </div>
+      </form>
+    </section>
+
+    <section id="profilePanel" class="panel admin-panel hidden">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow green">IDENTITAS DAN KOP LAPORAN</p>
+          <h2>Pengaturan Profil Masjid</h2>
+        </div>
+        <span class="private-note">Khusus administrator</span>
+      </div>
+
+      <form id="profileForm">
+        <div class="profile-editor-grid">
+          <div class="profile-photo-card">
+            <div class="profile-preview-frame">
+              <img id="profileLogoPreview" class="profile-logo-preview hidden" alt="Pratinjau logo masjid">
+              <div id="profileLogoPlaceholder" class="profile-logo-placeholder">DKM</div>
+            </div>
+            <label class="file-label">
+              Foto atau logo masjid
+              <input id="profileLogoFile" type="file" accept="image/png,image/jpeg,image/webp">
+            </label>
+            <label class="checkbox-label">
+              <input id="removeProfileLogo" type="checkbox">
+              Hapus foto/logo saat disimpan
+            </label>
+            <p class="help-text">Format PNG, JPG, atau WebP. Ukuran maksimal 2 MB. Foto akan tampil pada header aplikasi dan kop laporan PDF.</p>
+          </div>
+
+          <div class="profile-fields">
+            <label>Nama masjid<input id="profileName" type="text" maxlength="120" required></label>
+            <label>Alamat / dusun / RW<input id="profileAddress" type="text" maxlength="180" required></label>
+            <label>Desa / kelurahan<input id="profileVillage" type="text" maxlength="120"></label>
+            <label>Kecamatan<input id="profileDistrict" type="text" maxlength="120"></label>
+            <label>Kabupaten / kota<input id="profileRegency" type="text" maxlength="120"></label>
+            <label>Nomor telepon / WhatsApp<input id="profilePhone" type="tel" maxlength="40" placeholder="Opsional"></label>
+            <label>Email masjid<input id="profileEmail" type="email" maxlength="160" placeholder="Opsional"></label>
+            <label class="profile-description-field">Deskripsi / keterangan transparansi<textarea id="profileDescription" rows="3" maxlength="400"></textarea></label>
+          </div>
+        </div>
+        <div class="form-actions profile-form-actions">
+          <button id="saveProfileBtn" class="btn btn-primary" type="submit">Simpan Profil Masjid</button>
+          <span id="profileMessage" class="form-message" role="status"></span>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading list-heading">
+        <div>
+          <p class="eyebrow green">CATATAN KEUANGAN</p>
+          <h2>Riwayat Transaksi</h2>
+        </div>
+        <div class="report-actions">
+          <label class="print-date-field" for="reportPrintDate">
+            Tanggal cetak laporan
+            <input id="reportPrintDate" type="date" required>
+          </label>
+          <button id="exportPdfBtn" class="btn btn-outline" type="button">Unduh Laporan PDF</button>
+        </div>
+      </div>
+
+      <div class="filters">
+        <label>
+          Periode
+          <select id="monthFilter">
+            <option value="all">Semua periode</option>
+          </select>
+        </label>
+        <label>
+          Jenis
+          <select id="typeFilter">
+            <option value="all">Semua transaksi</option>
+            <option value="MASUK">Pemasukan</option>
+            <option value="KELUAR">Pengeluaran</option>
+          </select>
+        </label>
+        <label class="search-field">
+          Cari transaksi
+          <input id="searchInput" type="search" placeholder="Cari keterangan atau kategori...">
+        </label>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>Kategori</th>
+              <th>Keterangan</th>
+              <th>Jenis</th>
+              <th class="number">Nominal</th>
+              <th id="actionHeader" class="action-col hidden">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="transactionTableBody">
+            <tr><td colspan="6" class="empty-state">Memuat data transaksi...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-footer">
+        <span id="recordCount">0 transaksi</span>
+        <span id="periodSummary">Ringkasan periode: Rp0</span>
+      </div>
+    </section>
+
+    <section class="public-note">
+      <strong>Komitmen transparansi.</strong>
+      <span id="publicDescription">Informasi ini disediakan untuk membantu jamaah memantau pengelolaan kas masjid. Data transaksi dikelola oleh pengurus yang berwenang.</span>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="currentYear"></span> DKM <span id="footerBrandName">Masjid Jami Al-Ikhlas</span> · Amanah, Terbuka, dan Bertanggung Jawab</p>
+  </footer>
+
+  <dialog id="loginDialog" class="login-dialog">
+    <form id="loginForm" method="dialog">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow green">AREA PENGURUS</p>
+          <h2>Login Administrator</h2>
+        </div>
+        <button id="loginCloseBtn" class="close-btn" type="button" aria-label="Tutup">×</button>
+      </div>
+      <label>
+        Email
+        <input id="loginEmail" type="email" autocomplete="username" placeholder="email pengurus" required>
+      </label>
+      <label>
+        Password
+        <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Password" required>
+      </label>
+      <p id="loginMessage" class="form-message" role="status"></p>
+      <button id="loginSubmitBtn" class="btn btn-primary btn-full" type="submit">Masuk</button>
+      <p class="login-hint">Akun administrator dibuat melalui dashboard Supabase oleh pengelola sistem.</p>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
