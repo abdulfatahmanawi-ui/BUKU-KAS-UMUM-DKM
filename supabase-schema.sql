@@ -7,6 +7,7 @@ create table if not exists public.transactions (
   date date not null,
   description text not null,
   category text not null,
+  fund text not null default 'DKM' check (fund in ('DKM','PEMBANGUNAN','PHBI')),
   kind text not null check (kind in ('in', 'out')),
   amount bigint not null check (amount > 0),
   created_at timestamptz not null default now()

@@ -229,3 +229,15 @@ Jadwal salat dihitung langsung di browser menggunakan rumus astronomi matahari, 
 - Parameter perhitungan: Subuh 20°, Isya 18°, Asar metode Syafi'i (faktor bayangan 1), Duha 4,5°, tinggi matahari terbit/terbenam -0,833°, dan Imsak 10 menit sebelum Subuh.
 - Jadwal dan hitung mundur waktu salat diperbarui otomatis pada dashboard.
 - Semua perhitungan dilakukan di perangkat pengunjung; tidak memerlukan API key atau koneksi ke layanan jadwal pihak ketiga. Hasil dapat berbeda beberapa menit dari jadwal lembaga lain karena parameter perhitungan.
+
+## Kas Pembangunan dan Kas PHBI
+
+Untuk database yang sudah berjalan, jalankan supabase-migration-jenis-kas.sql di SQL Editor Supabase. Transaksi lama masuk ke Kas DKM. Pengurus dapat mengubah Jenis kas pada transaksi yang perlu dipindah.
+
+## Akses pengurus pada proyek Supabase baru
+
+Pastikan UUID berikut adalah akun pengurus yang dimaksud di Authentication → Users. Jika akun belum terdaftar sebagai admin, jalankan perintah ini di SQL Editor proyek tersebut.
+
+```sql
+insert into public.admin_users (user_id) values ('5e60a343-d416-43e5-8d71-617266358322') on conflict (user_id) do nothing;
+```
