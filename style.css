@@ -72,6 +72,22 @@ h2 { margin-bottom: 0; font: 700 22px "Playfair Display", Georgia, serif; color:
 .btn-muted { color: #48564d; background: #e9ede9; }
 .btn-full { width: 100%; }
 .container { padding: 30px 0 45px; }
+/* Tata letak navigasi samping kiri */
+main.container { display: grid; grid-template-columns: 220px minmax(0, 1fr); align-items: start; gap: 24px; }
+.main-content { min-width: 0; }
+.section-nav {
+  position: sticky; top: 18px; z-index: 5;
+  display: flex; flex-direction: column; gap: 5px;
+  width: 100%; max-width: none; padding: 10px; margin: 0;
+  border: 1px solid var(--line); border-radius: 14px;
+  background: #fff; box-shadow: var(--shadow);
+}
+.section-nav a { min-height: 42px; padding: 10px 12px; border-radius: 9px; }
+@media (max-width: 760px) {
+  main.container { grid-template-columns: 1fr; gap: 18px; }
+  .section-nav { position: static; }
+  .section-nav a { justify-content: flex-start; }
+}
 .intro-row { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 20px; }
 .intro-row h2 { font-size: 27px; margin-bottom: 5px; }
 .muted { color: var(--muted); margin: 0; font-size: 13px; }
