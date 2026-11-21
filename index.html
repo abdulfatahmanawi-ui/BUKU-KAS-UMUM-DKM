@@ -6,7 +6,10 @@
   <meta name="theme-color" content="#123c2d">
   <meta name="description" content="Sistem Informasi Kas DKM Masjid Jami Al-Ikhlas">
   <title>Kas DKM | Masjid Jami Al-Ikhlas</title>
-  <link rel="stylesheet" href="style.css?v=sidebar-left-1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="style.css?v=al-ikhlas-premium-1">
+  <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
@@ -33,22 +36,22 @@
 
   <main class="container">
     <nav class="section-nav" aria-label="Menu utama">
-      <a href="#dashboard" aria-current="page"><span aria-hidden="true">▦</span> Dashboard</a>
-      <a href="#jadwal-sholat"><span aria-hidden="true">☪</span> Jadwal Sholat</a>
-      <a href="#profil"><span aria-hidden="true">◇</span> Profil</a>
-      <a href="#kas-dkm" data-kas="DKM"><span aria-hidden="true">●</span> Kas DKM</a>
-      <a href="#kas-pembangunan" data-kas="PEMBANGUNAN"><span aria-hidden="true">◆</span> Kas Pembangunan</a>
-      <a href="#kas-phbi" data-kas="PHBI"><span aria-hidden="true">☪</span> Kas PHBI</a>
+      <a href="#dashboard" aria-current="page"><i data-lucide="layout-dashboard" aria-hidden="true"></i><span>Dashboard</span></a>
+      <a href="#profil"><i data-lucide="landmark" aria-hidden="true"></i><span>Profil</span></a>
+      <a href="#jadwal-sholat"><i data-lucide="clock-3" aria-hidden="true"></i><span>Jadwal Sholat</span></a>
+      <a href="#kas-dkm" data-kas="DKM"><i data-lucide="wallet" aria-hidden="true"></i><span>Kas DKM</span></a>
+      <a href="#kas-pembangunan" data-kas="PEMBANGUNAN"><i data-lucide="building-2" aria-hidden="true"></i><span>Kas Pembangunan</span></a>
+      <a href="#kas-phbi" data-kas="PHBI"><i data-lucide="calendar-days" aria-hidden="true"></i><span>Kas PHBI</span></a>
     </nav>
     <div class="main-content">
     <div id="dashboard" data-page>
     <section class="intro-row">
       <div>
         <p class="eyebrow green">TRANSPARANSI DAN AMANAH</p>
-        <h2>Dashboard Kas Masjid</h2>
-        <p class="muted">Pantau pemasukan, pengeluaran, dan saldo kas masjid.</p>
+        <h2>Dashboard Keuangan Masjid</h2>
+        <p class="muted">Transparansi, amanah, dan akuntabilitas keuangan masjid.</p>
       </div>
-      <div id="adminBadge" class="admin-badge hidden">Mode Pengurus Aktif</div>
+      <div class="mode-badges"><div id="adminBadge" class="admin-badge hidden">Mode Pengurus Aktif</div><div id="jamaahBadge" class="jamaah-badge">Mode Jamaah</div></div>
     </section>
 
 
@@ -57,6 +60,7 @@
       <p id="fundStatus" class="muted" role="status">Memuat data kas…</p>
       <div class="summary-grid fund-details">
         <article class="summary-card fund-detail income-card">
+          <div class="fund-card-top"><span class="fund-icon"><i data-lucide="wallet" aria-hidden="true"></i></span><span class="fund-kicker">DANA OPERASIONAL</span></div>
           <h3>Kas DKM</h3>
           <dl>
             <div><dt>Pemasukan</dt><dd id="DKMIncome">—</dd></div>
@@ -66,6 +70,7 @@
           <a class="btn btn-outline" href="#kas-dkm" data-kas="DKM" aria-label="Lihat transaksi Kas DKM">Lihat transaksi</a>
         </article>
         <article class="summary-card fund-detail balance-card">
+          <div class="fund-card-top"><span class="fund-icon"><i data-lucide="building-2" aria-hidden="true"></i></span><span class="fund-kicker">DANA INFRASTRUKTUR</span></div>
           <h3>Kas Pembangunan</h3>
           <dl>
             <div><dt>Pemasukan</dt><dd id="PEMBANGUNANIncome">—</dd></div>
@@ -75,6 +80,7 @@
           <a class="btn btn-outline" href="#kas-pembangunan" data-kas="PEMBANGUNAN" aria-label="Lihat transaksi Kas Pembangunan">Lihat transaksi</a>
         </article>
         <article class="summary-card fund-detail expense-card">
+          <div class="fund-card-top"><span class="fund-icon"><i data-lucide="calendar-heart" aria-hidden="true"></i></span><span class="fund-kicker">KEGIATAN KEAGAMAAN</span></div>
           <h3>Kas PHBI</h3>
           <dl>
             <div><dt>Pemasukan</dt><dd id="PHBIIncome">—</dd></div>
@@ -86,7 +92,23 @@
       </div>
     </section>
 
-
+    <section class="dashboard-insights-grid" aria-label="Aktivitas keuangan">
+      <article class="panel dashboard-chart-panel">
+        <div class="section-heading">
+          <div><p class="eyebrow green">ANALISIS KAS</p><h2>Arus Kas Bulanan</h2><p class="muted">Perbandingan pemasukan dan pengeluaran dari transaksi tersimpan</p></div>
+          <span class="chart-period-note">6 bulan terakhir</span>
+        </div>
+        <div class="chart-legend"><span><i class="legend-dot legend-income"></i>Pemasukan</span><span><i class="legend-dot legend-expense"></i>Pengeluaran</span></div>
+        <div id="dashboardChart" class="dashboard-chart" aria-live="polite"><p class="insight-empty">Menunggu data transaksi...</p></div>
+      </article>
+      <article class="panel dashboard-recent-panel">
+        <div class="section-heading">
+          <div><p class="eyebrow green">TRANSPARANSI</p><h2>Transaksi Terbaru</h2><p class="muted">Aktivitas keuangan yang terakhir dicatat</p></div>
+          <span class="chart-period-note">5 transaksi terakhir</span>
+        </div>
+        <div id="dashboardRecentTransactions" class="dashboard-recent-list"><p class="insight-empty">Menunggu data transaksi...</p></div>
+      </article>
+    </section>
 
     </div>
     <div id="jadwal-sholat" data-page hidden>
@@ -106,7 +128,7 @@
             Masjid Al-Ikhlas · Cikaum, Subang
           </p>
         </div>
-        <div class="prayer-date-badge"><span id="prayerTodayDate"></span><span>WIB</span></div>
+        <div class="prayer-date-badge"><span id="prayerTodayDate"></span><span id="prayerHijriDate" class="prayer-hijri-date"></span><span class="prayer-zone">WAKTU INDONESIA BARAT</span></div>
       </div>
 
       <div class="prayer-next-card">
@@ -378,6 +400,22 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=sidebar-left-1"></script>
+  <script src="app.js?v=al-ikhlas-premium-1"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      if (window.lucide) window.lucide.createIcons();
+      const hijri = document.getElementById("prayerHijriDate");
+      if (hijri) {
+        try {
+          hijri.textContent = new Intl.DateTimeFormat("id-ID-u-ca-islamic-umalqura", {
+            day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Jakarta"
+          }).format(new Date()) + " H";
+        } catch (_) {
+          try { hijri.textContent = new Intl.DateTimeFormat("id-ID-u-ca-islamic", {day:"numeric",month:"long",year:"numeric",timeZone:"Asia/Jakarta"}).format(new Date()) + " H"; }
+          catch (__) { hijri.textContent = "Tanggal Hijriyah"; }
+        }
+      }
+    });
+  </script>
 </body>
 </html>

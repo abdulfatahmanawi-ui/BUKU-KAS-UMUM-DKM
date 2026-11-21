@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap');
 
 :root {
   --green-950: #102f25;
@@ -484,3 +485,246 @@ tbody tr:hover { background: #fbfcfa; }
 .officer-input-grid label { display: grid; gap: 6px; color: var(--ink); font-size: 12px; font-weight: 600; }
 .officer-input-grid input { width: 100%; min-width: 0; padding: 10px 11px; border: 1px solid #dce4dd; border-radius: 8px; background: white; }
 @media (max-width: 640px) { .officer-list > div { grid-template-columns: 1fr; gap: 3px; } .officer-input-grid { grid-template-columns: 1fr; } }
+
+/* ==========================================================
+   AL-IKHLAS FINANCIAL DASHBOARD — PREMIUM EDITION
+   Layer visual only: all existing application selectors/IDs
+   and data bindings remain unchanged.
+   ========================================================== */
+:root {
+  --green-950: #0b3529;
+  --green-900: #104936;
+  --green-800: #155a42;
+  --green-700: #1d7554;
+  --green-100: #e9f2ec;
+  --cream: #f5f6f0;
+  --gold: #c6a45a;
+  --ink: #1c2d25;
+  --muted: #728078;
+  --line: #e5ebe5;
+  --shadow: 0 14px 36px rgba(11, 53, 41, .075);
+}
+html { scroll-behavior: smooth; }
+body { background: #f5f6f0; font-family: Inter, "Plus Jakarta Sans", Arial, sans-serif; color: var(--ink); }
+.site-header {
+  position: relative; overflow: hidden; padding: 21px 0 23px;
+  background: radial-gradient(circle at 82% 8%, rgba(198,164,90,.18), transparent 27%),
+    linear-gradient(118deg, #092d23 0%, #104936 58%, #176044 100%);
+  border-bottom: 3px solid var(--gold);
+}
+.site-header::after { content:""; position:absolute; width:260px; height:260px; right:-100px; bottom:-190px; border:1px solid rgba(230,207,153,.2); border-radius:50%; box-shadow:0 0 0 22px rgba(255,255,255,.018),0 0 0 44px rgba(255,255,255,.014); pointer-events:none; }
+.header-inner, .container { width: min(1320px, calc(100% - 48px)); }
+.header-inner { position:relative; z-index:1; }
+.brand { gap:15px; }
+.brand-mark { width:64px; height:64px; flex-basis:64px; border-radius:18px; border:1px solid rgba(222,194,127,.8); background:rgba(255,255,255,.1); box-shadow:0 8px 22px rgba(0,0,0,.13); }
+.brand-mark img { border-radius:14px; }
+.eyebrow { letter-spacing:1.8px; font-size:9px; }
+h1 { font-size:clamp(22px, 2.5vw, 30px); letter-spacing:-.35px; }
+.subtitle { max-width:720px; font-size:11px; line-height:1.6; }
+.header-actions { gap:9px; }
+.status-pill { padding:8px 12px; border:1px solid rgba(255,255,255,.13); border-radius:30px; font-size:10px; backdrop-filter:blur(8px); }
+.status-online { background:rgba(124,202,151,.15); border-color:rgba(165,225,181,.3); }
+.status-online::before { content:""; display:inline-block; width:7px; height:7px; margin-right:7px; border-radius:50%; background:#70d391; box-shadow:0 0 0 3px rgba(112,211,145,.14); vertical-align:1px; }
+.btn { min-height:40px; padding:10px 16px; border-radius:11px; font-size:11px; transition:transform .2s ease, box-shadow .2s ease, background .2s ease; }
+.btn-light { border:1px solid rgba(255,255,255,.4); box-shadow:0 5px 15px rgba(0,0,0,.08); }
+.btn-primary { background:linear-gradient(135deg,#155a42,#0b3529); box-shadow:0 6px 16px rgba(16,73,54,.16); }
+.btn-outline { border-color:#cbd9ce; background:#fff; }
+.container { padding:27px 0 50px; }
+main.container { grid-template-columns:228px minmax(0,1fr); gap:24px; }
+.section-nav { top:18px; gap:7px; padding:12px; border:1px solid #e3e9e2; border-radius:18px; box-shadow:0 10px 28px rgba(11,53,41,.055); }
+.section-nav a { display:flex; align-items:center; gap:12px; min-height:48px; padding:11px 13px; color:#607168; border-radius:12px; text-decoration:none; font-size:11px; font-weight:650; transition:all .2s ease; }
+.section-nav a i { width:18px; height:18px; stroke-width:1.8; color:#74877b; }
+.section-nav a:hover { color:var(--green-900); background:#f2f6f1; transform:translateX(2px); }
+.section-nav a[aria-current="page"] { color:#fff; background:linear-gradient(135deg,#176044,#0b3529); box-shadow:0 7px 16px rgba(11,53,41,.18); }
+.section-nav a[aria-current="page"] i { color:#e6d3a1; }
+.main-content { min-width:0; }
+.intro-row { align-items:center; margin:2px 0 23px; }
+.intro-row h2 { font-size:clamp(25px,3vw,31px); letter-spacing:-.45px; }
+.intro-row .muted { font-size:12px; }
+.admin-badge { color:#155a42; background:#eaf4ed; border:1px solid #cce1d2; padding:9px 13px; }
+#fundStatus { margin-bottom:12px; font-size:11px; }
+.summary-grid { gap:15px; margin-bottom:24px; }
+.summary-card { padding:20px 20px 18px; border:1px solid #e5ebe5; border-radius:17px; box-shadow:0 10px 28px rgba(11,53,41,.055); transition:transform .22s ease, box-shadow .22s ease; }
+.summary-card:hover { transform:translateY(-3px); box-shadow:0 16px 34px rgba(11,53,41,.1); }
+.summary-card::after { width:130px; height:130px; right:-50px; top:-56px; background:rgba(29,117,84,.045); }
+.fund-card-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.fund-icon { display:grid; place-items:center; width:39px; height:39px; border-radius:12px; color:#1b6a4b; background:#eaf3ec; }
+.fund-icon svg { width:19px; height:19px; stroke-width:1.8; }
+.fund-kicker { color:#99a49c; font-size:8px; font-weight:800; letter-spacing:1.1px; }
+.summary-card h3 { position:relative; margin:0 0 13px; color:#183d2e; font-size:15px; font-weight:750; }
+.fund-detail dl { display:grid; gap:8px; margin:0 0 16px; }
+.fund-detail dl > div { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.fund-detail dt { color:#829087; font-size:10px; }
+.fund-detail dd { margin:0; color:#405148; font-size:10px; font-weight:650; text-align:right; overflow-wrap:anywhere; }
+.fund-detail .fund-balance { padding-top:11px; margin-top:3px; border-top:1px solid #edf1ed; }
+.fund-balance dt { color:#4e6257; font-weight:700; }
+.fund-balance dd { color:#104936; font-size:clamp(14px,1.5vw,18px); font-weight:800; letter-spacing:-.3px; }
+.income-card { border-top:3px solid #5caa7b; }
+.balance-card { border-top:3px solid var(--gold); }
+.expense-card { border-top:3px solid #8aab96; }
+.summary-card .btn { min-height:36px; padding:8px 12px; font-size:10px; }
+.panel { padding:23px; margin-bottom:19px; border:1px solid #e5ebe5; border-radius:17px; box-shadow:0 10px 28px rgba(11,53,41,.05); }
+.section-heading { margin-bottom:19px; }
+h2 { letter-spacing:-.25px; }
+.section-heading h2 { font-size:22px; }
+.private-note { background:#fbf6e9; border:1px solid #eee2c5; }
+input, select, .profile-fields textarea { min-height:42px; border-color:#dfe7df; border-radius:10px; font-family:inherit; font-size:12px; }
+input:focus, select:focus, .profile-fields textarea:focus { border-color:#8bb69b; box-shadow:0 0 0 3px rgba(29,117,84,.1); }
+label { color:#53645a; font-size:11px; }
+.table-wrap { border:1px solid #e5ebe5; border-radius:13px; }
+table { min-width:720px; }
+thead { background:#f1f6f1; }
+th { color:#64746a; font-size:9px; letter-spacing:.7px; padding:14px; }
+td { padding:14px; font-size:11px; }
+tbody tr:hover { background:#f8fbf8; }
+.type-tag { padding:6px 9px; }
+.mini-btn { border-radius:8px; padding:7px 9px; }
+.public-note { padding:17px 19px; border-radius:0 12px 12px 0; font-size:11px; }
+.site-footer { background:#fff; border-top:1px solid #e5ebe5; padding:22px 15px; font-size:10px; }
+.login-dialog { border-radius:20px; padding:27px; }
+.login-dialog input { min-height:45px; }
+.toast { border:1px solid rgba(255,255,255,.12); border-radius:13px; padding:14px 18px; }
+.prayer-widget-panel { overflow:hidden; border-top:0; background:linear-gradient(145deg,#fff 0%,#fbfcf8 100%); }
+.prayer-widget-heading { align-items:center; }
+.prayer-date-badge { display:flex; flex-direction:column; align-items:flex-end; gap:4px; padding:12px 15px; border:1px solid rgba(198,164,90,.35); border-radius:13px; background:#fbf7ed; color:#244a37; font-size:11px; font-weight:700; }
+.prayer-date-badge > span:first-child { color:#244a37; }
+.prayer-hijri-date { color:#9a7a36; font-size:11px; font-weight:750; }
+.prayer-zone { color:#8d988f; font-size:8px; letter-spacing:.9px; }
+.prayer-next-card { padding:20px 22px; border:1px solid rgba(220,197,143,.22); border-radius:16px; color:#fff; background:radial-gradient(circle at 90% 0%,rgba(198,164,90,.19),transparent 28%),linear-gradient(120deg,#0b3529,#155a42); box-shadow:0 12px 25px rgba(11,53,41,.14); }
+.prayer-next-card .prayer-next-label { color:#e0c98e; letter-spacing:1.2px; }
+.prayer-next-card strong, .prayer-next-card span { color:inherit; }
+.prayer-next-card .prayer-next-date, .prayer-next-card .prayer-countdown { color:rgba(255,255,255,.72); }
+.prayer-next-time { font-size:34px; }
+.prayer-times-grid { gap:10px; }
+.prayer-time-card { padding:14px 12px; border:1px solid #e6ece5; border-radius:12px; background:#fff; }
+.prayer-time-card.is-next { border-color:#c6a45a; background:#fbf6e9; box-shadow:inset 0 0 0 1px rgba(198,164,90,.18); }
+.profile-overview { background:linear-gradient(135deg,#fff,#f8faf6); }
+.profile-details > div { padding:12px 0; border-bottom:1px solid #edf1ed; }
+.profile-photo-card { border-color:#e4ebe3; border-radius:15px; background:#f8faf7; }
+.profile-preview-frame { border-radius:15px; }
+.category-manager { border-radius:13px; }
+@media (max-width: 900px) {
+  main.container { grid-template-columns:1fr; gap:16px; }
+  .section-nav { position:static; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+  .section-nav a { justify-content:flex-start; min-height:62px; padding:10px; flex-direction:column; gap:5px; text-align:center; }
+  .section-nav a:hover { transform:translateY(-1px); }
+  .section-nav a i { width:19px; height:19px; }
+}
+@media (max-width: 600px) {
+  .header-inner, .container { width:calc(100% - 28px); }
+  .site-header { padding:15px 0 17px; }
+  .header-inner { align-items:center; flex-direction:row; gap:10px; }
+  .brand { align-items:center; gap:10px; }
+  .brand-mark { width:49px; height:49px; flex-basis:49px; border-radius:14px; }
+  .brand-mark img { border-radius:11px; }
+  .brand .eyebrow { margin-bottom:3px; font-size:7px; letter-spacing:1px; }
+  h1 { margin-bottom:3px; font-size:17px; line-height:1.15; }
+  .subtitle { max-width:235px; font-size:8px; line-height:1.4; }
+  .header-actions { flex:0 0 auto; flex-direction:column; align-items:flex-end; gap:6px; }
+  .status-pill { padding:6px 8px; font-size:8px; }
+  .header-actions .btn { min-height:32px; padding:7px 10px; font-size:9px; }
+  .container { padding:16px 0 32px; }
+  main.container { gap:14px; }
+  .section-nav { grid-template-columns:repeat(2,minmax(0,1fr)); padding:9px; gap:7px; border-radius:15px; }
+  .section-nav a { min-height:56px; flex-direction:row; justify-content:flex-start; gap:9px; padding:9px 10px; text-align:left; font-size:10px; }
+  .section-nav a i { width:17px; height:17px; flex:0 0 17px; }
+  .intro-row { gap:10px; margin-bottom:16px; }
+  .intro-row h2 { font-size:24px; }
+  .intro-row .muted { font-size:10px; line-height:1.5; }
+  .admin-badge { padding:7px 10px; font-size:9px; }
+  .summary-grid { grid-template-columns:1fr; gap:11px; margin-bottom:17px; }
+  .summary-card { padding:16px; border-radius:15px; }
+  .fund-card-top { margin-bottom:10px; }
+  .fund-icon { width:35px; height:35px; }
+  .summary-card h3 { font-size:14px; margin-bottom:10px; }
+  .fund-detail dl { gap:7px; margin-bottom:12px; }
+  .fund-detail dt, .fund-detail dd { font-size:10px; }
+  .fund-balance dd { font-size:17px; }
+  .panel { padding:16px; border-radius:15px; margin-bottom:14px; }
+  .section-heading { align-items:flex-start; flex-direction:column; gap:9px; }
+  .section-heading h2 { font-size:20px; }
+  .prayer-widget-heading { flex-direction:row; align-items:center; }
+  .prayer-date-badge { max-width:47%; padding:9px 10px; font-size:9px; text-align:right; }
+  .prayer-hijri-date { font-size:9px; }
+  .prayer-zone { font-size:6px; }
+  .prayer-next-card { align-items:flex-start; padding:15px; gap:8px; }
+  .prayer-next-time { font-size:27px; }
+  .prayer-times-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .transaction-form { grid-template-columns:1fr 1fr; }
+  .filters { grid-template-columns:1fr 1fr; }
+  .search-field { grid-column:1/-1; }
+  .report-actions { width:100%; }
+  .table-wrap { overflow:visible; border:0; }
+  table { min-width:0; border-collapse:separate; border-spacing:0 9px; }
+  thead { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  tbody { display:block; width:100%; }
+  tbody tr { display:grid; grid-template-columns:1fr 1fr; gap:0 12px; margin-bottom:10px; padding:11px 12px; border:1px solid #e5ebe5; border-radius:13px; background:#fff; box-shadow:0 5px 15px rgba(11,53,41,.035); }
+  tbody td { display:flex; min-width:0; justify-content:space-between; align-items:flex-start; gap:8px; padding:7px 0; border:0; font-size:10px; text-align:right; overflow-wrap:anywhere; }
+  tbody td::before { color:#87948b; font-size:9px; font-weight:600; text-align:left; }
+  tbody td:nth-child(1)::before { content:"Tanggal"; }
+  tbody td:nth-child(2)::before { content:"Kategori"; }
+  tbody td:nth-child(3) { grid-column:1/-1; text-align:left; }
+  tbody td:nth-child(3)::before { content:"Keterangan"; flex:0 0 auto; }
+  tbody td:nth-child(4)::before { content:"Jenis"; }
+  tbody td:nth-child(5)::before { content:"Nominal"; }
+  tbody td.action-col { grid-column:1/-1; justify-content:flex-end; }
+  .row-actions { justify-content:flex-end; }
+  .table-footer { gap:7px; font-size:9px; }
+  .profile-fields { grid-template-columns:1fr; }
+}
+@media (max-width: 380px) {
+  .header-inner, .container { width:calc(100% - 22px); }
+  .subtitle { max-width:190px; }
+  .brand-mark { width:43px; height:43px; flex-basis:43px; }
+  h1 { font-size:15px; }
+  .status-pill { font-size:7px; }
+  .section-nav a { font-size:9px; }
+  .transaction-form, .filters { grid-template-columns:1fr; }
+  .description-field, .party-name-field, .search-field { grid-column:auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior:auto !important; transition-duration:.01ms !important; animation-duration:.01ms !important; }
+}
+.dashboard-insights-grid { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr); gap:16px; }
+.dashboard-insights-grid .panel { min-width:0; margin-bottom:18px; }
+.dashboard-chart-panel .section-heading, .dashboard-recent-panel .section-heading { align-items:flex-start; }
+.chart-period-note { padding:7px 10px; border:1px solid #e8e1ce; border-radius:30px; color:#94783d; background:#fbf7ed; font-size:9px; font-weight:700; white-space:nowrap; }
+.chart-legend { display:flex; gap:16px; margin:0 0 10px; color:#78857d; font-size:9px; }
+.chart-legend span { display:flex; align-items:center; gap:6px; }
+.legend-dot { width:8px; height:8px; border-radius:3px; }
+.legend-income { background:#1d7554; }
+.legend-expense { background:#c6a45a; }
+.dashboard-chart { min-height:175px; display:flex; align-items:stretch; }
+.chart-bars { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:10px; width:100%; padding:10px 2px 0; }
+.chart-month { display:flex; min-width:0; flex-direction:column; align-items:center; justify-content:flex-end; gap:10px; }
+.chart-bar-pair { display:flex; align-items:flex-end; justify-content:center; gap:5px; width:100%; height:135px; padding:0 0 1px; border-bottom:1px solid #e9eee9; background:repeating-linear-gradient(to top,transparent 0,transparent 32px,#f1f4f0 33px,#f1f4f0 34px); }
+.chart-bar { display:block; width:min(17px,35%); min-height:0; border-radius:5px 5px 2px 2px; transition:height .35s ease; }
+.income-bar { background:linear-gradient(180deg,#4b9a70,#176044); }
+.expense-bar { background:linear-gradient(180deg,#e0c98e,#b48d3f); }
+.chart-month-label { color:#7e8a82; font-size:9px; font-weight:650; text-transform:capitalize; }
+.insight-empty { display:grid; place-items:center; width:100%; min-height:130px; margin:0; color:#96a198; font-size:10px; text-align:center; }
+.text-link { color:#176044; font-size:10px; font-weight:750; text-decoration:none; white-space:nowrap; }
+.text-link:hover { text-decoration:underline; }
+.dashboard-recent-list { display:flex; flex-direction:column; }
+.recent-transaction-item { display:flex; align-items:center; gap:10px; min-width:0; padding:11px 0; border-bottom:1px solid #edf1ed; }
+.recent-transaction-item:last-child { border-bottom:0; }
+.recent-transaction-icon { display:grid; place-items:center; width:34px; height:34px; flex:0 0 34px; border-radius:11px; }
+.recent-transaction-icon svg { width:16px; height:16px; }
+.recent-in { color:#1d7554; background:#eaf3ec; }
+.recent-out { color:#a85b50; background:#faeeeb; }
+.recent-transaction-copy { display:flex; flex:1; min-width:0; flex-direction:column; gap:4px; }
+.recent-transaction-copy strong { overflow:hidden; color:#34473c; font-size:10px; text-overflow:ellipsis; white-space:nowrap; }
+.recent-transaction-copy span { color:#8a968e; font-size:9px; }
+.recent-transaction-amount { max-width:45%; font-size:10px; text-align:right; overflow-wrap:anywhere; }
+@media (max-width: 760px) { .dashboard-insights-grid { grid-template-columns:1fr; gap:0; } }
+@media (max-width: 600px) {
+ .dashboard-chart-panel .section-heading, .dashboard-recent-panel .section-heading { flex-direction:row; align-items:center; }
+ .chart-bars { gap:5px; }
+ .chart-bar-pair { height:115px; }
+ .dashboard-chart { min-height:150px; }
+ .recent-transaction-item { gap:8px; }
+ .recent-transaction-amount { font-size:9px; }
+}
+.mode-badges { display:flex; align-items:center; gap:8px; }
+.jamaah-badge { padding:9px 13px; border:1px solid #e2e9e2; border-radius:30px; color:#64756a; background:#fff; font-size:10px; font-weight:700; }
+@media (max-width:600px) { .mode-badges { align-self:flex-end; } .jamaah-badge { padding:7px 9px; font-size:8px; } }

@@ -124,6 +124,7 @@
   function updateAdminUI() {
     $("adminPanel").classList.toggle("hidden", !isAdmin);
     $("adminBadge").classList.toggle("hidden", !isAdmin);
+    $("jamaahBadge").classList.toggle("hidden", isAdmin);
     $("loginOpenBtn").classList.toggle("hidden", Boolean(currentUser));
     $("logoutBtn").classList.toggle("hidden", !currentUser);
     $("actionHeader").classList.toggle("hidden", !isAdmin);
@@ -682,9 +683,57 @@
     }).join("");
   }
 
+  function renderDashboardInsights() {
+    const chart = $("dashboardChart");
+    const recent = $("dashboardRecentTransactions");
+    if (!chart || !recent) return;
+
+    const now = new Date();
+    const monthItems = [];
+    for (let offset = 5; offset >= 0; offset--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - offset, 1);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      const items = transactions.filter((item) => String(item.transaction_date || "").startsWith(key));
+      monthItems.push({
+        key,
+        label: new Intl.DateTimeFormat("id-ID", { month: "short" }).format(date),
+        income: calculate(items.filter((item) => item.type === "MASUK")).income,
+        expense: calculate(items.filter((item) => item.type === "KELUAR")).expense
+      });
+    }
+    const maxValue = Math.max(1, ...monthItems.flatMap((item) => [item.income, item.expense]));
+    chart.innerHTML = monthItems.some((item) => item.income || item.expense)
+      ? `<div class="chart-bars">${monthItems.map((item) => {
+          const incomeHeight = item.income ? Math.max(4, item.income / maxValue * 100) : 0;
+          const expenseHeight = item.expense ? Math.max(4, item.expense / maxValue * 100) : 0;
+          return `<div class="chart-month" aria-label="${escapeHtml(item.label)}: pemasukan ${escapeHtml(rupiah(item.income))}, pengeluaran ${escapeHtml(rupiah(item.expense))}">
+            <div class="chart-bar-pair">
+              <span class="chart-bar income-bar" style="height:${incomeHeight}%" title="Pemasukan ${escapeHtml(rupiah(item.income))}"></span>
+              <span class="chart-bar expense-bar" style="height:${expenseHeight}%" title="Pengeluaran ${escapeHtml(rupiah(item.expense))}"></span>
+            </div><span class="chart-month-label">${escapeHtml(item.label)}</span></div>`;
+        }).join("")}</div>`
+      : `<p class="insight-empty">Belum ada transaksi pada enam bulan terakhir.</p>`;
+
+    const latest = [...transactions].sort((a, b) => {
+      const dateCompare = String(b.transaction_date || "").localeCompare(String(a.transaction_date || ""));
+      return dateCompare || String(b.created_at || "").localeCompare(String(a.created_at || ""));
+    }).slice(0, 5);
+    recent.innerHTML = latest.length ? latest.map((item) => {
+      const incoming = item.type === "MASUK";
+      const fundName = fundNames[item.fund] || "Kas Masjid";
+      return `<div class="recent-transaction-item">
+        <span class="recent-transaction-icon ${incoming ? "recent-in" : "recent-out"}"><i data-lucide="${incoming ? "arrow-down-left" : "arrow-up-right"}" aria-hidden="true"></i></span>
+        <div class="recent-transaction-copy"><strong>${escapeHtml(item.description || item.category || "Transaksi")}</strong><span>${escapeHtml(fundName)} · ${escapeHtml(formatDate(item.transaction_date))}</span></div>
+        <strong class="recent-transaction-amount ${incoming ? "amount-in" : "amount-out"}">${incoming ? "+" : "−"}${escapeHtml(rupiah(item.amount))}</strong>
+      </div>`;
+    }).join("") : `<p class="insight-empty">Belum ada transaksi yang tercatat.</p>`;
+    if (window.lucide) window.lucide.createIcons();
+  }
+
   function renderAll() {
     renderFundCards(true);
     renderTable();
+    renderDashboardInsights();
   }
 
   function resetTransactionForm() {
