@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#123c2d">
   <meta name="description" content="Sistem Informasi Kas DKM Masjid Jami Al-Ikhlas">
   <title>Kas DKM | Masjid Jami Al-Ikhlas</title>
-  <link rel="stylesheet" href="style.css?v=menu-kas-3">
+  <link rel="stylesheet" href="style.css?v=kas-per-menu-2">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
@@ -36,10 +36,9 @@
       <a href="#dashboard" aria-current="page"><span aria-hidden="true">▦</span> Dashboard</a>
       <a href="#jadwal-sholat"><span aria-hidden="true">☪</span> Jadwal Sholat</a>
       <a href="#profil"><span aria-hidden="true">◇</span> Profil</a>
-      <a href="#transaksi"><span aria-hidden="true">⇄</span> Transaksi</a>
-      <a href="#transaksi" data-kas="DKM"><span aria-hidden="true">●</span> Kas DKM</a>
-      <a href="#transaksi" data-kas="PEMBANGUNAN"><span aria-hidden="true">◆</span> Kas Pembangunan</a>
-      <a href="#transaksi" data-kas="PHBI"><span aria-hidden="true">☪</span> Kas PHBI</a>
+      <a href="#kas-dkm" data-kas="DKM"><span aria-hidden="true">●</span> Kas DKM</a>
+      <a href="#kas-pembangunan" data-kas="PEMBANGUNAN"><span aria-hidden="true">◆</span> Kas Pembangunan</a>
+      <a href="#kas-phbi" data-kas="PHBI"><span aria-hidden="true">☪</span> Kas PHBI</a>
     </nav>
     <div id="dashboard" data-page>
     <section class="intro-row">
@@ -63,7 +62,7 @@
             <div><dt>Pengeluaran</dt><dd id="DKMExpense">—</dd></div>
             <div class="fund-balance"><dt>Saldo</dt><dd id="DKMBalance">—</dd></div>
           </dl>
-          <a class="btn btn-outline" href="#transaksi" data-kas="DKM" aria-label="Lihat transaksi Kas DKM">Lihat transaksi</a>
+          <a class="btn btn-outline" href="#kas-dkm" data-kas="DKM" aria-label="Lihat transaksi Kas DKM">Lihat transaksi</a>
         </article>
         <article class="summary-card fund-detail balance-card">
           <h3>Kas Pembangunan</h3>
@@ -72,7 +71,7 @@
             <div><dt>Pengeluaran</dt><dd id="PEMBANGUNANExpense">—</dd></div>
             <div class="fund-balance"><dt>Saldo</dt><dd id="PEMBANGUNANBalance">—</dd></div>
           </dl>
-          <a class="btn btn-outline" href="#transaksi" data-kas="PEMBANGUNAN" aria-label="Lihat transaksi Kas Pembangunan">Lihat transaksi</a>
+          <a class="btn btn-outline" href="#kas-pembangunan" data-kas="PEMBANGUNAN" aria-label="Lihat transaksi Kas Pembangunan">Lihat transaksi</a>
         </article>
         <article class="summary-card fund-detail expense-card">
           <h3>Kas PHBI</h3>
@@ -81,7 +80,7 @@
             <div><dt>Pengeluaran</dt><dd id="PHBIExpense">—</dd></div>
             <div class="fund-balance"><dt>Saldo</dt><dd id="PHBIBalance">—</dd></div>
           </dl>
-          <a class="btn btn-outline" href="#transaksi" data-kas="PHBI" aria-label="Lihat transaksi Kas PHBI">Lihat transaksi</a>
+          <a class="btn btn-outline" href="#kas-phbi" data-kas="PHBI" aria-label="Lihat transaksi Kas PHBI">Lihat transaksi</a>
         </article>
       </div>
     </section>
@@ -204,7 +203,11 @@
         </div>
         <span class="private-note">Khusus administrator</span>
       </div>
-      <form id="transactionForm" class="transaction-form">
+      <div class="transaction-quick-actions" aria-label="Tambah transaksi">
+        <button id="addIncomeBtn" class="btn btn-income" type="button">＋ Tambah Pemasukan</button>
+        <button id="addExpenseBtn" class="btn btn-expense" type="button">－ Tambah Pengeluaran</button>
+      </div>
+      <form id="transactionForm" class="transaction-form hidden">
         <input type="hidden" id="transactionId"><label>Jenis kas<select id="transactionFund" disabled><option value="DKM">Kas DKM</option><option value="PEMBANGUNAN">Kas Pembangunan</option><option value="PHBI">Kas PHBI</option></select></label>
         <label>
           Tanggal transaksi
@@ -256,7 +259,7 @@
       <div class="section-heading list-heading">
         <div>
           <p class="eyebrow green">CATATAN KEUANGAN</p>
-          <h2>Riwayat Transaksi</h2>
+          <h2 id="transactionPageTitle">Riwayat Kas DKM</h2>
         </div>
         <div class="report-actions">
           <label class="print-date-field" for="reportPrintDate">
@@ -267,7 +270,7 @@
         </div>
       </div>
 
-      <div class="filters"><label>Kas<select id="fundFilter"><option value="all">Semua kas</option><option value="DKM">Kas DKM</option><option value="PEMBANGUNAN">Kas Pembangunan</option><option value="PHBI">Kas PHBI</option></select></label>
+      <div class="filters"><label class="hidden">Kas<select id="fundFilter" disabled><option value="all">Semua kas</option><option value="DKM">Kas DKM</option><option value="PEMBANGUNAN">Kas Pembangunan</option><option value="PHBI">Kas PHBI</option></select></label>
         <label>
           Periode
           <select id="monthFilter">
@@ -342,6 +345,6 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=menu-kas-3"></script>
+  <script src="app.js?v=kas-per-menu-2"></script>
 </body>
 </html>

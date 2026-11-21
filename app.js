@@ -526,6 +526,19 @@
     $("saveTransactionBtn").textContent = "Simpan Transaksi";
     $("cancelEditBtn").classList.add("hidden");
     setFormMessage("");
+    $("transactionForm").classList.add("hidden");
+  }
+
+  function openTransactionForm(type) {
+    const fund = Object.keys(fundNames).find((key) => key === $("fundFilter").value) || "DKM";
+    resetTransactionForm();
+    $("transactionFund").value = fund;
+    $("transactionType").value = type;
+    updatePartyNameLabel();
+    $("formTitle").textContent = (type === "MASUK" ? "Tambah Pemasukan " : "Tambah Pengeluaran ") + fundNames[fund];
+    $("saveTransactionBtn").textContent = type === "MASUK" ? "Simpan Pemasukan" : "Simpan Pengeluaran";
+    $("transactionForm").classList.remove("hidden");
+    $("transactionForm").scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
   function beginEdit(id) {
@@ -540,8 +553,9 @@
     $("transactionDescription").value = item.description;
     $("transactionPartyName").value = item.party_name || "";
     updatePartyNameLabel();
-    $("formTitle").textContent = "Edit Transaksi";
+    $("formTitle").textContent = "Edit Transaksi " + fundNames[item.fund];
     $("saveTransactionBtn").textContent = "Simpan Perubahan";
+    $("transactionForm").classList.remove("hidden");
     $("cancelEditBtn").classList.remove("hidden");
     $("adminPanel").scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -1475,14 +1489,26 @@
 
   function renderPage() {
     const requested = window.location.hash.slice(1);
-    const selected = ["dashboard", "jadwal-sholat", "profil", "transaksi"].includes(requested)
-      ? requested : "dashboard";
+    const fundRoutes = { "kas-dkm": "DKM", "kas-pembangunan": "PEMBANGUNAN", "kas-phbi": "PHBI" };
+    const activeFund = fundRoutes[requested];
+    const selected = activeFund ? "transaksi" :
+      (["dashboard", "jadwal-sholat", "profil"].includes(requested) ? requested : "dashboard");
+
+    if (activeFund) {
+      $("fundFilter").value = activeFund;
+      if (!$("transactionId").value) $("transactionFund").value = activeFund;
+      $("transactionPageTitle").textContent = "Riwayat " + fundNames[activeFund];
+      if (!$("transactionId").value) $("transactionForm").classList.add("hidden");
+      $("formTitle").textContent = "Tambah Transaksi " + fundNames[activeFund];
+      $("exportPdfBtn").textContent = "Unduh PDF " + fundNames[activeFund];
+      renderTable();
+    }
 
     document.querySelectorAll("[data-page]").forEach((page) => {
       page.hidden = page.id !== selected;
     });
     document.querySelectorAll(".section-nav a").forEach((link) => {
-      if (link.hash === "#" + selected) link.setAttribute("aria-current", "page");
+      if (link.hash === "#" + requested) link.setAttribute("aria-current", "page");
       else link.removeAttribute("aria-current");
     });
   }
@@ -1497,6 +1523,8 @@
     $("loginForm").addEventListener("submit", login);
     $("logoutBtn").addEventListener("click", logout);
     $("transactionForm").addEventListener("submit", saveTransaction);
+    $("addIncomeBtn").addEventListener("click", () => openTransactionForm("MASUK"));
+    $("addExpenseBtn").addEventListener("click", () => openTransactionForm("KELUAR"));
     $("transactionType").addEventListener("change", updatePartyNameLabel);
     $("profileForm").addEventListener("submit", saveMosqueProfile);
     $("profileLogoFile").addEventListener("change", () => {
@@ -1530,7 +1558,7 @@
       link.addEventListener("click", () => {
         $("fundFilter").value = link.dataset.kas;
         updateReportButton();
-        if (fundsReady && !$("transactionId").value) $("transactionFund").value = link.dataset.kas;
+        if (!$("transactionId").value) $("transactionFund").value = link.dataset.kas;
         renderTable();
       });
     });
