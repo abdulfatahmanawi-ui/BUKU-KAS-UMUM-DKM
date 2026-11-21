@@ -424,3 +424,48 @@ tbody tr:hover { background: #fbfcfa; }
 .prayer-method summary { width: fit-content; cursor: pointer; color: var(--green-800); }
 @media (max-width: 760px) { .prayer-widget-compact .prayer-times-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (max-width: 480px) { .prayer-widget-compact { padding: 12px; } .prayer-widget-compact .prayer-widget-heading { align-items: start; } }
+
+
+/* Pengelolaan kategori pemasukan dan pengeluaran */
+.category-manager {
+  margin: 22px 0;
+  padding: 20px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 16px;
+  background: var(--surface, #fff);
+}
+.category-manager h3 { margin: 0; }
+.category-manager h4 { margin: 14px 0 9px; }
+.category-form {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(180px, 1.5fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+.category-form label { display: grid; gap: 7px; font-weight: 600; }
+.category-form input, .category-form select {
+  width: 100%;
+  min-width: 0;
+}
+.category-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 12px;
+}
+.category-list { display: grid; gap: 7px; }
+.category-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 11px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 9px;
+  background: var(--surface-soft, #f8fafc);
+}
+.category-item span { overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+  .category-form, .category-columns { grid-template-columns: 1fr; }
+  .category-manager { padding: 14px; }
+}

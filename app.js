@@ -14,6 +14,11 @@
   let fundsReady = false;
   let reportDataReady = false;
   const fundNames = {"DKM":"Kas DKM","PEMBANGUNAN":"Kas Pembangunan","PHBI":"Kas PHBI"};
+  const defaultCategories = {
+    MASUK: ["Infak", "Sedekah", "Donasi Jamaah", "Wakaf", "Sumbangan", "Lainnya"],
+    KELUAR: ["Operasional", "Listrik dan Air", "Kebersihan", "Pembangunan", "Kegiatan Masjid", "Perlengkapan", "Lainnya"]
+  };
+  let transactionCategories = { MASUK: [], KELUAR: [] };
   let isAdmin = false;
   let currentUser = null;
   let toastTimer = null;
@@ -356,6 +361,95 @@
     });
   }
 
+  function setCategoryMessage(message, success = false) {
+    const el = $("categoryMessage");
+    if (!el) return;
+    el.textContent = message;
+    el.classList.toggle("success", success);
+  }
+
+  function categoriesFor(type) {
+    return transactionCategories[type] || defaultCategories[type] || [];
+  }
+
+  function renderCategoryOptions(selected = "") {
+    const type = $("transactionType").value || "MASUK";
+    const categories = [...categoriesFor(type)];
+    if (selected && !categories.includes(selected)) categories.unshift(selected);
+    $("transactionCategory").innerHTML = categories.length
+      ? categories.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("")
+      : '<option value="">Belum ada kategori — tambahkan melalui Kelola Kategori</option>';
+    if (selected) $("transactionCategory").value = selected;
+  }
+
+  function renderCategoryLists() {
+    const render = (type, targetId) => {
+      const target = $(targetId);
+      const names = categoriesFor(type);
+      target.innerHTML = names.length ? names.map((name) => `
+        <div class="category-item"><span>${escapeHtml(name)}</span>
+          <button type="button" class="mini-btn delete" data-category-type="${type}" data-category-name="${escapeHtml(name)}" aria-label="Hapus kategori ${escapeHtml(name)}">Hapus</button>
+        </div>`).join("") : '<p class="help-text">Belum ada kategori.</p>';
+    };
+    render("MASUK", "incomeCategoryList");
+    render("KELUAR", "expenseCategoryList");
+  }
+
+  async function loadCategories() {
+    if (!client) return;
+    const { data, error } = await client.from("transaction_categories")
+      .select("id, category_type, name").order("name", { ascending: true });
+    if (error) {
+      console.error("Memuat kategori:", error);
+      transactionCategories = { MASUK: [...defaultCategories.MASUK], KELUAR: [...defaultCategories.KELUAR] };
+      setCategoryMessage("Tabel kategori belum tersedia. Jalankan supabase-migration-kategori-transaksi.sql di Supabase.");
+    } else {
+      transactionCategories = { MASUK: [], KELUAR: [] };
+      (data || []).forEach((row) => {
+        const type = row.category_type === "in" ? "MASUK" : row.category_type === "out" ? "KELUAR" : "";
+        if (type) transactionCategories[type].push(row.name);
+      });
+    }
+    renderCategoryOptions($("transactionCategory").value);
+    renderCategoryLists();
+  }
+
+  async function addCategory(event) {
+    event.preventDefault();
+    if (!isAdmin) return;
+    const type = $("categoryType").value;
+    const name = $("newCategoryName").value.trim();
+    if (!name) return;
+    if (categoriesFor(type).some((item) => item.toLocaleLowerCase() === name.toLocaleLowerCase())) {
+      setCategoryMessage("Kategori tersebut sudah ada.");
+      return;
+    }
+    const { error } = await client.from("transaction_categories").insert({
+      category_type: type === "MASUK" ? "in" : "out", name
+    });
+    if (error) {
+      setCategoryMessage(`Gagal menambahkan kategori: ${error.message}`);
+      return;
+    }
+    $("newCategoryName").value = "";
+    await loadCategories();
+    renderCategoryOptions();
+    setCategoryMessage("Kategori berhasil ditambahkan.", true);
+  }
+
+  async function deleteCategory(type, name) {
+    if (!isAdmin || !window.confirm(`Hapus kategori "${name}" dari daftar ${type === "MASUK" ? "pemasukan" : "pengeluaran"}? Transaksi lama tetap tersimpan.`)) return;
+    const { error } = await client.from("transaction_categories").delete()
+      .eq("category_type", type === "MASUK" ? "in" : "out").eq("name", name);
+    if (error) {
+      setCategoryMessage(`Gagal menghapus kategori: ${error.message}`);
+      return;
+    }
+    await loadCategories();
+    renderCategoryOptions();
+    setCategoryMessage("Kategori berhasil dihapus. Riwayat transaksi lama tidak berubah.", true);
+  }
+
   async function loadTransactions() {
     if (!client) return;
     reportDataReady = false;
@@ -520,6 +614,7 @@
     $("transactionId").value = "";
     $("transactionDate").value = new Date().toISOString().slice(0, 10);
     $("transactionType").value = "MASUK";
+    renderCategoryOptions();
     $("transactionPartyName").value = "";
     updatePartyNameLabel();
     $("formTitle").textContent = "Tambah Transaksi";
@@ -534,6 +629,7 @@
     resetTransactionForm();
     $("transactionFund").value = fund;
     $("transactionType").value = type;
+    renderCategoryOptions();
     updatePartyNameLabel();
     $("formTitle").textContent = (type === "MASUK" ? "Tambah Pemasukan " : "Tambah Pengeluaran ") + fundNames[fund];
     $("saveTransactionBtn").textContent = type === "MASUK" ? "Simpan Pemasukan" : "Simpan Pengeluaran";
@@ -547,6 +643,7 @@
     $("transactionId").value = item.id;
     $("transactionDate").value = item.transaction_date;
     $("transactionType").value = item.type === "KELUAR" ? "KELUAR" : "MASUK";
+    renderCategoryOptions(item.category);
     $("transactionCategory").value = item.category;
     $("transactionFund").value = item.fund;
     $("transactionAmount").value = item.amount;
@@ -575,7 +672,7 @@
     if (fundsReady) payload.fund = $("transactionFund").value;
     const partyName = $("transactionPartyName").value.trim();
 
-    if (!payload.date || !payload.description || !partyName || !Number.isFinite(payload.amount) || payload.amount <= 0) {
+    if (!payload.date || !payload.description || !payload.category || !partyName || !Number.isFinite(payload.amount) || payload.amount <= 0) {
       setFormMessage("Lengkapi tanggal, keterangan, nama penyetor/penerima, dan nominal dengan benar.");
       return;
     }
@@ -1525,7 +1622,19 @@
     $("transactionForm").addEventListener("submit", saveTransaction);
     $("addIncomeBtn").addEventListener("click", () => openTransactionForm("MASUK"));
     $("addExpenseBtn").addEventListener("click", () => openTransactionForm("KELUAR"));
-    $("transactionType").addEventListener("change", updatePartyNameLabel);
+    $("transactionType").addEventListener("change", () => {
+      updatePartyNameLabel();
+      renderCategoryOptions();
+    });
+    $("categoryForm").addEventListener("submit", addCategory);
+    $("incomeCategoryList").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-category-name]");
+      if (button) deleteCategory(button.dataset.categoryType, button.dataset.categoryName);
+    });
+    $("expenseCategoryList").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-category-name]");
+      if (button) deleteCategory(button.dataset.categoryType, button.dataset.categoryName);
+    });
     $("profileForm").addEventListener("submit", saveMosqueProfile);
     $("profileLogoFile").addEventListener("change", () => {
       const file = $("profileLogoFile").files[0];
@@ -1607,6 +1716,7 @@
     const { data: { session } } = await client.auth.getSession();
     await verifyAdmin(session?.user || null);
     await loadMosqueProfile();
+    await loadCategories();
     await loadTransactions();
 
     // Jalankan proses lanjutan setelah callback auth selesai agar tidak
@@ -1615,6 +1725,7 @@
       window.setTimeout(async () => {
         await verifyAdmin(sessionData?.user || null);
         await loadMosqueProfile();
+        await loadCategories();
         await loadTransactions();
       }, 0);
     });

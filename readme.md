@@ -241,3 +241,14 @@ Pastikan UUID berikut adalah akun pengurus yang dimaksud di Authentication → U
 ```sql
 insert into public.admin_users (user_id) values ('5e60a343-d416-43e5-8d71-617266358322') on conflict (user_id) do nothing;
 ```
+
+
+## Pembaruan kategori pemasukan dan pengeluaran
+
+Untuk mengaktifkan pengelolaan kategori terpisah, jalankan file
+`supabase-migration-kategori-transaksi.sql` melalui **Supabase Dashboard → SQL Editor**.
+Migrasi ini membuat tabel kategori, mengisi kategori awal pemasukan/pengeluaran,
+dan membatasi penambahan serta penghapusan kategori hanya untuk administrator.
+Kategori transaksi lama tidak dihapus atau diubah.
+
+Setelah migrasi berhasil, unggah ulang seluruh file aplikasi ke hosting seperti biasa.

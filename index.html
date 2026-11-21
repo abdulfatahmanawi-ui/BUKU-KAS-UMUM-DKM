@@ -208,6 +208,26 @@
         <button id="addIncomeBtn" class="btn btn-income" type="button">＋ Tambah Pemasukan</button>
         <button id="addExpenseBtn" class="btn btn-expense" type="button">－ Tambah Pengeluaran</button>
       </div>
+      <section class="category-manager" aria-labelledby="categoryManagerTitle">
+        <div class="section-heading">
+          <div><p class="eyebrow green">PENGATURAN KATEGORI</p><h3 id="categoryManagerTitle">Kelola Kategori Transaksi</h3></div>
+        </div>
+        <p class="help-text">Kategori pemasukan dan pengeluaran dikelola secara terpisah. Perubahan hanya dapat dilakukan administrator.</p>
+        <form id="categoryForm" class="category-form">
+          <label>Untuk jenis transaksi
+            <select id="categoryType"><option value="MASUK">Pemasukan</option><option value="KELUAR">Pengeluaran</option></select>
+          </label>
+          <label>Nama kategori
+            <input id="newCategoryName" type="text" maxlength="80" placeholder="Contoh: Infak Jumat" required>
+          </label>
+          <button class="btn btn-primary" type="submit" id="addCategoryBtn">Tambah Kategori</button>
+        </form>
+        <div class="category-columns">
+          <div><h4>Kategori Pemasukan</h4><div id="incomeCategoryList" class="category-list"><p class="help-text">Memuat kategori...</p></div></div>
+          <div><h4>Kategori Pengeluaran</h4><div id="expenseCategoryList" class="category-list"><p class="help-text">Memuat kategori...</p></div></div>
+        </div>
+        <p id="categoryMessage" class="form-message" role="status"></p>
+      </section>
       <form id="transactionForm" class="transaction-form hidden">
         <input type="hidden" id="transactionId"><label>Jenis kas<select id="transactionFund" disabled><option value="DKM">Kas DKM</option><option value="PEMBANGUNAN">Kas Pembangunan</option><option value="PHBI">Kas PHBI</option></select></label>
         <label>
