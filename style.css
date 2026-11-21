@@ -469,3 +469,18 @@ tbody tr:hover { background: #fbfcfa; }
   .category-form, .category-columns { grid-template-columns: 1fr; }
   .category-manager { padding: 14px; }
 }
+
+
+/* Susunan pengurus DKM */
+.officers-panel { margin-top: 18px; }
+.officer-group { margin-top: 18px; }
+.officer-group h3 { margin: 0 0 10px; color: var(--green-800); font-size: 15px; }
+.officer-list { margin: 0; border-top: 1px solid var(--line); }
+.officer-list > div { display: grid; grid-template-columns: minmax(190px, 1fr) 1.2fr; gap: 14px; padding: 10px 2px; border-bottom: 1px solid var(--line); }
+.officer-list dt { color: var(--muted); font-weight: 600; }
+.officer-list dd { margin: 0; font-weight: 700; color: var(--ink); }
+.officers-editor { display: grid; gap: 18px; }
+.officer-input-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.officer-input-grid label { display: grid; gap: 6px; color: var(--ink); font-size: 12px; font-weight: 600; }
+.officer-input-grid input { width: 100%; min-width: 0; padding: 10px 11px; border: 1px solid #dce4dd; border-radius: 8px; background: white; }
+@media (max-width: 640px) { .officer-list > div { grid-template-columns: 1fr; gap: 3px; } .officer-input-grid { grid-template-columns: 1fr; } }

@@ -36,6 +36,20 @@
     logo_path: null
   };
   const PROFILE_BUCKET = "mosque-assets";
+  const officerDefaults = [
+    { id: "pelindung", role: "Pelindung", group: "Pengurus Inti", sort: 1 },
+    { id: "penasehat", role: "Penasehat", group: "Pengurus Inti", sort: 2 },
+    { id: "ketua", role: "Ketua", group: "Pengurus Inti", sort: 3 },
+    { id: "wakil_ketua", role: "Wakil Ketua", group: "Pengurus Inti", sort: 4 },
+    { id: "sekretaris", role: "Sekretaris", group: "Pengurus Inti", sort: 5 },
+    { id: "bendahara", role: "Bendahara", group: "Pengurus Inti", sort: 6 },
+    { id: "bidang_manajemen", role: "Bidang Manajemen dan Administrasi", group: "Bidang-bidang", sort: 7 },
+    { id: "bidang_sdm", role: "Bidang Pengembangan SDM", group: "Bidang-bidang", sort: 8 },
+    { id: "bidang_sarana", role: "Bidang Pemeliharaan dan Sarana", group: "Bidang-bidang", sort: 9 },
+    { id: "bidang_remaja", role: "Bidang Pembinaan Remaja Masjid", group: "Bidang-bidang", sort: 10 },
+    { id: "bidang_humas", role: "Bidang Hubungan Masyarakat dan Pendanaan", group: "Bidang-bidang", sort: 11 }
+  ];
+  let officers = officerDefaults.map((item) => ({ ...item, name: "" }));
 
   const rupiah = (value) => new Intl.NumberFormat("id-ID", {
     style: "currency", currency: "IDR", maximumFractionDigits: 0
@@ -114,6 +128,7 @@
     $("logoutBtn").classList.toggle("hidden", !currentUser);
     $("actionHeader").classList.toggle("hidden", !isAdmin);
     $("profilePanel").classList.toggle("hidden", !isAdmin);
+    $("officersAdminPanel").classList.toggle("hidden", !isAdmin);
   }
 
   async function verifyAdmin(user) {
@@ -230,6 +245,69 @@
     }
     if (data) mosqueProfile = { ...mosqueProfile, ...data };
     renderMosqueProfile();
+  }
+
+  function renderOfficers() {
+    const publicTarget = $("publicOfficers");
+    if (publicTarget) {
+      const groups = ["Pengurus Inti", "Bidang-bidang"];
+      publicTarget.innerHTML = groups.map((group) => {
+        const items = officers.filter((item) => item.group === group).sort((a,b) => a.sort-b.sort);
+        return `<div class="officer-group"><h3>${escapeHtml(group)}</h3><dl class="officer-list">${items.map((item) => `<div><dt>${escapeHtml(item.role)}</dt><dd>${escapeHtml(item.name || "—")}</dd></div>`).join("")}</dl></div>`;
+      }).join("");
+    }
+    const editor = $("officersEditor");
+    if (editor) {
+      const groups = ["Pengurus Inti", "Bidang-bidang"];
+      editor.innerHTML = groups.map((group) => `<div class="officer-group"><h3>${escapeHtml(group)}</h3><div class="officer-input-grid">${officers.filter((item) => item.group === group).sort((a,b) => a.sort-b.sort).map((item) => `<label>${escapeHtml(item.role)}<input type="text" maxlength="120" data-officer-id="${escapeHtml(item.id)}" value="${escapeHtml(item.name || "")}" placeholder="Masukkan nama ${escapeHtml(item.role.toLowerCase())}"></label>`).join("")}</div></div>`).join("");
+    }
+  }
+
+  async function loadOfficers() {
+    if (!client) return;
+    const { data, error } = await client.from("dkm_officers").select("officer_id, role_name, group_name, person_name, sort_order").order("sort_order", { ascending: true });
+    if (error) {
+      console.error("Memuat susunan pengurus:", error);
+      if ($("officersMessage")) $("officersMessage").textContent = "Jalankan SQL migration susunan pengurus terlebih dahulu.";
+      renderOfficers();
+      return;
+    }
+    const byId = new Map((data || []).map((row) => [row.officer_id, row]));
+    officers = officerDefaults.map((item) => {
+      const row = byId.get(item.id);
+      return { ...item, name: row?.person_name || "" };
+    });
+    renderOfficers();
+  }
+
+  async function saveOfficers(event) {
+    event.preventDefault();
+    if (!isAdmin) return;
+    const button = $("saveOfficersBtn");
+    button.disabled = true; button.textContent = "Menyimpan...";
+    try {
+      const values = [...document.querySelectorAll("[data-officer-id]")];
+      const rows = officers.map((item) => ({
+        officer_id: item.id, role_name: item.role, group_name: item.group,
+        person_name: values.find((input) => input.dataset.officerId === item.id)?.value.trim() || "",
+        sort_order: item.sort
+      }));
+      const { error } = await client.from("dkm_officers").upsert(rows, { onConflict: "officer_id" });
+      if (error) throw error;
+      officers = officers.map((item) => ({ ...item, name: rows.find((row) => row.officer_id === item.id)?.person_name || "" }));
+      renderOfficers();
+      $("officersMessage").textContent = "Susunan pengurus berhasil disimpan.";
+      $("officersMessage").classList.add("success");
+      showToast("Susunan pengurus berhasil diperbarui.");
+    } catch (error) {
+      console.error("Menyimpan susunan pengurus:", error);
+      $("officersMessage").textContent = `Gagal menyimpan: ${error.message || "Periksa izin database."}`;
+      $("officersMessage").classList.remove("success");
+    } finally { button.disabled = false; button.textContent = "Simpan Susunan Pengurus"; }
+  }
+
+  function officerName(id) {
+    return officers.find((item) => item.id === id)?.name?.trim() || "";
   }
 
   function setProfileMessage(message, success = false) {
@@ -961,10 +1039,15 @@
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9);
       doc.text("Bendahara DKM", rightCenter, 143.2, { align: "center" });
+      if (officerName("bendahara")) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7.5);
+        drawFitText(officerName("bendahara"), rightCenter, 148, 58, 7.5, 6.5, "normal", "center");
+      }
       doc.setTextColor(115, 125, 133);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7.5);
-      doc.text("Pengurus DKM", rightCenter, 148, { align: "center" });
+      if (!officerName("bendahara")) doc.text("Pengurus DKM", rightCenter, 148, { align: "center" });
 
       // Catatan kaki tetap berada di dalam bingkai.
       doc.setTextColor(145, 154, 160);
@@ -1242,6 +1325,10 @@
     doc.setFontSize(9);
     doc.text("Ketua DKM", leftCenter, roleY + 5, { align: "center" });
     doc.text("Bendahara", rightCenter, roleY + 5, { align: "center" });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    if (officerName("ketua")) doc.text(officerName("ketua"), leftCenter, roleY + 29, { align: "center", maxWidth: 58 });
+    if (officerName("bendahara")) doc.text(officerName("bendahara"), rightCenter, roleY + 29, { align: "center", maxWidth: 58 });
 
     const signatureLineY = roleY + 34;
     doc.setDrawColor(0, 0, 0);
@@ -1636,6 +1723,7 @@
       if (button) deleteCategory(button.dataset.categoryType, button.dataset.categoryName);
     });
     $("profileForm").addEventListener("submit", saveMosqueProfile);
+    $("officersForm").addEventListener("submit", saveOfficers);
     $("profileLogoFile").addEventListener("change", () => {
       const file = $("profileLogoFile").files[0];
       $("removeProfileLogo").checked = false;
@@ -1716,6 +1804,7 @@
     const { data: { session } } = await client.auth.getSession();
     await verifyAdmin(session?.user || null);
     await loadMosqueProfile();
+    await loadOfficers();
     await loadCategories();
     await loadTransactions();
 
@@ -1725,6 +1814,7 @@
       window.setTimeout(async () => {
         await verifyAdmin(sessionData?.user || null);
         await loadMosqueProfile();
+        await loadOfficers();
         await loadCategories();
         await loadTransactions();
       }, 0);

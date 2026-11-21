@@ -145,6 +145,10 @@
         <div id="publicProfileEmailRow" hidden><dt>Email</dt><dd id="publicProfileEmail"></dd></div>
       </dl>
     </section>
+    <section class="panel officers-panel">
+      <div class="section-heading"><div><p class="eyebrow green">STRUKTUR ORGANISASI</p><h2>Susunan Pengurus DKM</h2></div></div>
+      <div id="publicOfficers" class="public-officers"><p class="help-text">Memuat susunan pengurus...</p></div>
+    </section>
     <section class="public-note">
       <strong>Komitmen transparansi.</strong>
       <span id="publicDescription">Informasi ini disediakan untuk membantu jamaah memantau pengelolaan kas masjid. Data transaksi dikelola oleh pengurus yang berwenang.</span>
@@ -191,6 +195,13 @@
           <button id="saveProfileBtn" class="btn btn-primary" type="submit">Simpan Profil Masjid</button>
           <span id="profileMessage" class="form-message" role="status"></span>
         </div>
+      </form>
+    </section>
+    <section id="officersAdminPanel" class="panel admin-panel hidden">
+      <div class="section-heading"><div><p class="eyebrow green">PENGELOLAAN PENGURUS</p><h2>Kelola Susunan Pengurus</h2></div><span class="private-note">Khusus administrator</span></div>
+      <p class="help-text">Isi atau ubah nama pengurus pada setiap jabatan. Perubahan akan tampil pada Profil dan nama Ketua serta Bendahara digunakan pada laporan PDF.</p>
+      <form id="officersForm"><div id="officersEditor" class="officers-editor"></div>
+        <div class="form-actions"><button id="saveOfficersBtn" class="btn btn-primary" type="submit">Simpan Susunan Pengurus</button><span id="officersMessage" class="form-message" role="status"></span></div>
       </form>
     </section>
 
