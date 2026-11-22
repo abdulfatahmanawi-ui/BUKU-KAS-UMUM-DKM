@@ -175,7 +175,12 @@
       <strong>Komitmen transparansi.</strong>
       <span id="publicDescription">Informasi ini disediakan untuk membantu jamaah memantau pengelolaan kas masjid. Data transaksi dikelola oleh pengurus yang berwenang.</span>
     </section>
-    <section id="profilePanel" class="panel admin-panel hidden">
+    <nav class="profile-subnav" id="profileSubnav" aria-label="Submenu profil">
+      <button type="button" class="profile-tab is-active" data-profile-tab="profil-masjid"><i data-lucide="building-2"></i> Profil Masjid</button>
+      <button type="button" class="profile-tab" data-profile-tab="profil-pengurus"><i data-lucide="users"></i> Susunan Pengurus</button>
+      <button type="button" class="profile-tab" data-profile-tab="profil-kategori"><i data-lucide="tags"></i> Kelola Kategori Transaksi</button>
+    </nav>
+    <section id="profilePanel" data-profile-section="profil-masjid" class="panel admin-panel hidden">
       <div class="section-heading">
         <div>
           <p class="eyebrow green">IDENTITAS DAN KOP LAPORAN</p>
@@ -219,29 +224,14 @@
         </div>
       </form>
     </section>
-    <section id="officersAdminPanel" class="panel admin-panel hidden">
+    <section id="officersAdminPanel" data-profile-section="profil-pengurus" class="panel admin-panel hidden">
       <div class="section-heading"><div><p class="eyebrow green">PENGELOLAAN PENGURUS</p><h2>Kelola Susunan Pengurus</h2></div><span class="private-note">Khusus administrator</span></div>
       <p class="help-text">Isi atau ubah nama pengurus pada setiap jabatan. Perubahan akan tampil pada Profil dan nama Ketua serta Bendahara digunakan pada laporan PDF.</p>
       <form id="officersForm"><div id="officersEditor" class="officers-editor"></div>
         <div class="form-actions"><button id="saveOfficersBtn" class="btn btn-primary" type="submit">Simpan Susunan Pengurus</button><span id="officersMessage" class="form-message" role="status"></span></div>
       </form>
     </section>
-
-    </div>
-    <div id="transaksi" data-page hidden>
-    <section id="adminPanel" class="panel admin-panel hidden">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow green">PENGELOLAAN DATA</p>
-          <h2 id="formTitle">Tambah Transaksi</h2>
-        </div>
-        <span class="private-note">Khusus administrator</span>
-      </div>
-      <div class="transaction-quick-actions" aria-label="Tambah transaksi">
-        <button id="addIncomeBtn" class="btn btn-income" type="button">＋ Tambah Pemasukan</button>
-        <button id="addExpenseBtn" class="btn btn-expense" type="button">－ Tambah Pengeluaran</button>
-      </div>
-      <section class="category-manager" aria-labelledby="categoryManagerTitle">
+          <section data-profile-section="profil-kategori" class="panel admin-panel hidden category-manager" aria-labelledby="categoryManagerTitle">
         <div class="section-heading">
           <div><p class="eyebrow green">PENGATURAN KATEGORI</p><h3 id="categoryManagerTitle">Kelola Kategori Transaksi</h3></div>
         </div>
@@ -261,6 +251,22 @@
         </div>
         <p id="categoryMessage" class="form-message" role="status"></p>
       </section>
+
+    </div>
+    <div id="transaksi" data-page hidden>
+    <section id="adminPanel" class="panel admin-panel hidden">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow green">PENGELOLAAN DATA</p>
+          <h2 id="formTitle">Tambah Transaksi</h2>
+        </div>
+        <span class="private-note">Khusus administrator</span>
+      </div>
+      <div class="transaction-quick-actions" aria-label="Tambah transaksi">
+        <button id="addIncomeBtn" class="btn btn-income" type="button">＋ Tambah Pemasukan</button>
+        <button id="addExpenseBtn" class="btn btn-expense" type="button">－ Tambah Pengeluaran</button>
+      </div>
+
       <form id="transactionForm" class="transaction-form hidden">
         <input type="hidden" id="transactionId"><label>Jenis kas<select id="transactionFund" disabled><option value="DKM">Kas DKM</option><option value="PEMBANGUNAN">Kas Pembangunan</option><option value="PHBI">Kas PHBI</option></select></label>
         <label>

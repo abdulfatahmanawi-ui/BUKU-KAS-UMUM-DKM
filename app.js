@@ -19,6 +19,7 @@
     KELUAR: ["Operasional", "Listrik dan Air", "Kebersihan", "Pembangunan", "Kegiatan Masjid", "Perlengkapan", "Lainnya"]
   };
   let transactionCategories = { MASUK: [], KELUAR: [] };
+  let categoryRecords = { MASUK: [], KELUAR: [] };
   let isAdmin = false;
   let currentUser = null;
   let toastTimer = null;
@@ -130,6 +131,8 @@
     $("actionHeader").classList.toggle("hidden", !isAdmin);
     $("profilePanel").classList.toggle("hidden", !isAdmin);
     $("officersAdminPanel").classList.toggle("hidden", !isAdmin);
+    $("profileSubnav").classList.toggle("hidden", !isAdmin);
+    document.querySelectorAll("[data-profile-section]").forEach((panel) => panel.classList.add("hidden"));
   }
 
   async function verifyAdmin(user) {
@@ -464,10 +467,13 @@
   function renderCategoryLists() {
     const render = (type, targetId) => {
       const target = $(targetId);
-      const names = categoriesFor(type);
-      target.innerHTML = names.length ? names.map((name) => `
-        <div class="category-item"><span>${escapeHtml(name)}</span>
-          <button type="button" class="mini-btn delete" data-category-type="${type}" data-category-name="${escapeHtml(name)}" aria-label="Hapus kategori ${escapeHtml(name)}">Hapus</button>
+      const rows = categoryRecords[type] || [];
+      target.innerHTML = rows.length ? rows.map((row) => `
+        <div class="category-item"><span>${escapeHtml(row.name)}</span>
+          <div class="category-actions">
+            <button type="button" class="mini-btn" data-category-edit="${escapeHtml(row.id)}" data-category-type="${type}" aria-label="Edit kategori ${escapeHtml(row.name)}">Edit</button>
+            <button type="button" class="mini-btn delete" data-category-delete="${escapeHtml(row.id)}" data-category-type="${type}" data-category-name="${escapeHtml(row.name)}" aria-label="Hapus kategori ${escapeHtml(row.name)}">Hapus</button>
+          </div>
         </div>`).join("") : '<p class="help-text">Belum ada kategori.</p>';
     };
     render("MASUK", "incomeCategoryList");
@@ -481,12 +487,14 @@
     if (error) {
       console.error("Memuat kategori:", error);
       transactionCategories = { MASUK: [...defaultCategories.MASUK], KELUAR: [...defaultCategories.KELUAR] };
+      categoryRecords = { MASUK: [], KELUAR: [] };
       setCategoryMessage("Tabel kategori belum tersedia. Jalankan supabase-migration-kategori-transaksi.sql di Supabase.");
     } else {
       transactionCategories = { MASUK: [], KELUAR: [] };
+      categoryRecords = { MASUK: [], KELUAR: [] };
       (data || []).forEach((row) => {
         const type = row.category_type === "in" ? "MASUK" : row.category_type === "out" ? "KELUAR" : "";
-        if (type) transactionCategories[type].push(row.name);
+        if (type) { transactionCategories[type].push(row.name); categoryRecords[type].push(row); }
       });
     }
     renderCategoryOptions($("transactionCategory").value);
@@ -516,10 +524,28 @@
     setCategoryMessage("Kategori berhasil ditambahkan.", true);
   }
 
-  async function deleteCategory(type, name) {
+  async function editCategory(type, id) {
+    if (!isAdmin) return;
+    const row = (categoryRecords[type] || []).find((item) => String(item.id) === String(id));
+    if (!row) return;
+    const nextName = window.prompt("Ubah nama kategori:", row.name);
+    if (nextName === null) return;
+    const name = nextName.trim();
+    if (!name) { setCategoryMessage("Nama kategori tidak boleh kosong."); return; }
+    if (name.length > 80) { setCategoryMessage("Nama kategori maksimal 80 karakter."); return; }
+    if (name.toLocaleLowerCase() !== row.name.toLocaleLowerCase() && categoriesFor(type).some((item) => item.toLocaleLowerCase() === name.toLocaleLowerCase())) {
+      setCategoryMessage("Kategori dengan nama tersebut sudah ada."); return;
+    }
+    const { error } = await client.from("transaction_categories").update({ name }).eq("id", id);
+    if (error) { setCategoryMessage(`Gagal mengubah kategori: ${error.message}`); return; }
+    await loadCategories();
+    renderCategoryOptions();
+    setCategoryMessage("Nama kategori berhasil diperbarui. Riwayat transaksi lama tidak diubah.", true);
+  }
+
+  async function deleteCategory(type, name, id) {
     if (!isAdmin || !window.confirm(`Hapus kategori "${name}" dari daftar ${type === "MASUK" ? "pemasukan" : "pengeluaran"}? Transaksi lama tetap tersimpan.`)) return;
-    const { error } = await client.from("transaction_categories").delete()
-      .eq("category_type", type === "MASUK" ? "in" : "out").eq("name", name);
+    const { error } = await client.from("transaction_categories").delete().eq("id", id);
     if (error) {
       setCategoryMessage(`Gagal menghapus kategori: ${error.message}`);
       return;
@@ -1740,6 +1766,11 @@
     document.querySelectorAll("[data-page]").forEach((page) => {
       page.hidden = page.id !== selected;
     });
+    if (selected === "profil" && isAdmin) {
+      const activeTab = document.querySelector("[data-profile-tab].is-active") || document.querySelector('[data-profile-tab="profil-masjid"]');
+      const target = activeTab?.dataset.profileTab || "profil-masjid";
+      document.querySelectorAll("[data-profile-section]").forEach((panel) => panel.classList.toggle("hidden", panel.dataset.profileSection !== target));
+    }
     document.querySelectorAll(".section-nav a").forEach((link) => {
       if (link.hash === "#" + requested) link.setAttribute("aria-current", "page");
       else link.removeAttribute("aria-current");
@@ -1763,13 +1794,20 @@
       renderCategoryOptions();
     });
     $("categoryForm").addEventListener("submit", addCategory);
-    $("incomeCategoryList").addEventListener("click", (event) => {
-      const button = event.target.closest("[data-category-name]");
-      if (button) deleteCategory(button.dataset.categoryType, button.dataset.categoryName);
-    });
-    $("expenseCategoryList").addEventListener("click", (event) => {
-      const button = event.target.closest("[data-category-name]");
-      if (button) deleteCategory(button.dataset.categoryType, button.dataset.categoryName);
+    [$("incomeCategoryList"), $("expenseCategoryList")].forEach((list) => list.addEventListener("click", (event) => {
+      const editButton = event.target.closest("[data-category-edit]");
+      const deleteButton = event.target.closest("[data-category-delete]");
+      if (editButton) editCategory(editButton.dataset.categoryType, editButton.dataset.categoryEdit);
+      if (deleteButton) deleteCategory(deleteButton.dataset.categoryType, deleteButton.dataset.categoryName, deleteButton.dataset.categoryDelete);
+    }));
+    $("profileSubnav").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-profile-tab]");
+      if (!button || !isAdmin) return;
+      const target = button.dataset.profileTab;
+      document.querySelectorAll("[data-profile-section]").forEach((panel) => {
+        panel.classList.toggle("hidden", panel.dataset.profileSection !== target);
+      });
+      document.querySelectorAll("[data-profile-tab]").forEach((tab) => tab.classList.toggle("is-active", tab === button));
     });
     $("profileForm").addEventListener("submit", saveMosqueProfile);
     $("officersForm").addEventListener("submit", saveOfficers);
