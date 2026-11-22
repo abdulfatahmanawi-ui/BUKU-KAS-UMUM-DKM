@@ -536,11 +536,26 @@
     if (name.toLocaleLowerCase() !== row.name.toLocaleLowerCase() && categoriesFor(type).some((item) => item.toLocaleLowerCase() === name.toLocaleLowerCase())) {
       setCategoryMessage("Kategori dengan nama tersebut sudah ada."); return;
     }
+    // Perbarui nama kategori pada transaksi lama juga, agar riwayat, laporan,
+    // pencarian, dan ekspor menampilkan nama kategori terbaru.
+    const transactionKind = type === "MASUK" ? "in" : "out";
+    const { error: historyError } = await client.from("transactions")
+      .update({ category: name })
+      .eq("category", row.name)
+      .eq("kind", transactionKind);
+    if (historyError) {
+      setCategoryMessage(`Gagal memperbarui kategori pada riwayat transaksi: ${historyError.message}`);
+      return;
+    }
+
     const { error } = await client.from("transaction_categories").update({ name }).eq("id", id);
-    if (error) { setCategoryMessage(`Gagal mengubah kategori: ${error.message}`); return; }
-    await loadCategories();
+    if (error) {
+      setCategoryMessage(`Riwayat transaksi sudah diperbarui, tetapi daftar kategori gagal diubah: ${error.message}. Silakan coba edit kembali.`);
+      return;
+    }
+    await Promise.all([loadCategories(), loadTransactions()]);
     renderCategoryOptions();
-    setCategoryMessage("Nama kategori berhasil diperbarui. Riwayat transaksi lama tidak diubah.", true);
+    setCategoryMessage(`Kategori berhasil diubah menjadi "${name}". Nama kategori pada riwayat transaksi lama juga sudah diperbarui.`, true);
   }
 
   async function deleteCategory(type, name, id) {
