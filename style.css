@@ -728,3 +728,163 @@ tbody tr:hover { background:#f8fbf8; }
 .mode-badges { display:flex; align-items:center; gap:8px; }
 .jamaah-badge { padding:9px 13px; border:1px solid #e2e9e2; border-radius:30px; color:#64756a; background:#fff; font-size:10px; font-weight:700; }
 @media (max-width:600px) { .mode-badges { align-self:flex-end; } .jamaah-badge { padding:7px 9px; font-size:8px; } }
+
+/* ==========================================================
+   Refresh UI Modern Islamic Finance — November 2026
+   Lapisan visual tambahan; tidak mengubah logika aplikasi.
+   ========================================================== */
+:root {
+  --green-950: #103b2b;
+  --green-900: #145238;
+  --green-800: #176746;
+  --green-700: #238257;
+  --green-100: #eaf4ed;
+  --cream: #f4f7f3;
+  --gold: #c6a45a;
+  --ink: #20352a;
+  --muted: #718077;
+  --line: #e4ebe5;
+  --shadow: 0 12px 34px rgba(16, 59, 43, .065);
+}
+html { scroll-behavior: smooth; }
+body {
+  background:
+    radial-gradient(ellipse at 88% 0%, rgba(198,164,90,.075), transparent 32rem),
+    var(--cream);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 3px solid rgba(198,164,90,.75); outline-offset: 3px; }
+.site-header {
+  position: relative;
+  padding: 23px 0;
+  background: radial-gradient(circle at 85% 15%, rgba(198,164,90,.16), transparent 24rem),
+              linear-gradient(118deg, #0d3023 0%, #145238 58%, #1a6848 100%);
+  border-bottom: 3px solid var(--gold);
+}
+.site-header::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 1px;
+  background: rgba(255,255,255,.16);
+}
+.brand-mark { box-shadow: 0 8px 22px rgba(0,0,0,.13); }
+.header-actions .btn { min-height: 40px; }
+.container { padding-top: 30px; }
+.section-nav {
+  padding: 11px;
+  border-color: rgba(222,233,224,.95);
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 12px 30px rgba(16,59,43,.065);
+  backdrop-filter: blur(12px);
+}
+.section-nav a { min-height: 46px; }
+.section-nav a[aria-current="page"] {
+  background: linear-gradient(135deg, #1b704d, #103f2d);
+  box-shadow: 0 8px 18px rgba(16,75,52,.19);
+}
+.intro-row { padding: 2px 0 3px; }
+.intro-row h2 { letter-spacing: -.7px; }
+.summary-card, .panel { box-shadow: 0 9px 28px rgba(16,59,43,.052); }
+.summary-card { border-radius: 18px; }
+.panel { border-radius: 18px; }
+.fund-detail .btn { border-radius: 10px; }
+.dashboard-chart-panel, .dashboard-recent-panel { min-height: 100%; }
+.chart-period-note { border-color: #eee4cb; background: #fcf8ef; }
+.table-wrap { box-shadow: 0 5px 18px rgba(16,59,43,.025); }
+.btn { transition: transform .18s ease, box-shadow .18s ease, background .18s ease; }
+.btn-primary:hover, .btn-income:hover, .btn-expense:hover { box-shadow: 0 7px 17px rgba(16,59,43,.17); }
+.toast { z-index: 30; }
+
+@media (min-width: 901px) {
+  main.container { grid-template-columns: 232px minmax(0,1fr); gap: 27px; }
+  .section-nav { top: 18px; }
+  .summary-grid.fund-details { grid-template-columns: repeat(3, minmax(0,1fr)); }
+}
+
+/* Navigasi bawah yang mudah dijangkau ibu jari di ponsel */
+@media (max-width: 760px) {
+  body { padding-bottom: calc(82px + env(safe-area-inset-bottom)); }
+  main.container { display: block; }
+  .section-nav {
+    position: fixed;
+    z-index: 25;
+    left: 10px;
+    right: 10px;
+    bottom: calc(9px + env(safe-area-inset-bottom));
+    top: auto;
+    width: auto;
+    max-width: none;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0,1fr));
+    gap: 2px;
+    padding: 8px 5px;
+    margin: 0;
+    border: 1px solid rgba(220,231,222,.96);
+    border-radius: 18px;
+    background: rgba(255,255,255,.96);
+    box-shadow: 0 12px 35px rgba(13,48,35,.18);
+    backdrop-filter: blur(18px);
+  }
+  .section-nav a {
+    min-width: 0;
+    min-height: 53px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 2px;
+    border-radius: 11px;
+    text-align: center;
+    white-space: normal;
+    font-size: 8px;
+    line-height: 1.15;
+  }
+  .section-nav a span {
+    display: block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    flex: 0 1 auto;
+  }
+  .section-nav a i { width: 18px; height: 18px; flex: 0 0 18px; }
+  .section-nav a:hover { transform: none; }
+  .section-nav a[aria-current="page"] { box-shadow: 0 4px 10px rgba(16,75,52,.16); }
+  .container { padding-top: 18px; }
+  .site-header { padding: 14px 0 16px; }
+  .summary-grid.fund-details { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+  .fund-detail { padding: 14px; }
+  .fund-detail:last-child { grid-column: 1 / -1; }
+  .fund-detail h3 { font-size: 14px; }
+  .fund-detail .fund-kicker { font-size: 7px; letter-spacing: .65px; }
+  .fund-detail dl > div { gap: 5px; }
+  .fund-detail dt, .fund-detail dd { font-size: 9px; }
+  .fund-balance dd { font-size: 14px; }
+  .dashboard-insights-grid { gap: 0; }
+  .dashboard-insights-grid .panel { min-height: 0; }
+}
+@media (max-width: 430px) {
+  .header-inner, .container { width: calc(100% - 24px); }
+  .header-inner { gap: 8px; }
+  .brand { min-width: 0; }
+  .brand > div:last-child { min-width: 0; }
+  .brand h1 { overflow-wrap: anywhere; }
+  .subtitle { max-width: 205px; }
+  .header-actions { max-width: 112px; }
+  .status-pill { white-space: normal; text-align: center; }
+  .summary-grid.fund-details { gap: 8px; }
+  .fund-detail { padding: 12px; }
+  .fund-icon { width: 32px; height: 32px; }
+  .fund-detail .btn { width: 100%; text-align: center; padding-inline: 7px; }
+  .section-nav { left: 7px; right: 7px; padding: 7px 3px; }
+  .section-nav a { font-size: 7px; }
+  .section-nav a i { width: 17px; height: 17px; flex-basis: 17px; }
+}
+@media (max-width: 350px) {
+  .section-nav a span { font-size: 6px; }
+  .brand-mark { width: 40px; height: 40px; flex-basis: 40px; }
+  .brand h1 { font-size: 14px; }
+  .header-actions .btn { padding: 6px 7px; font-size: 8px; }
+}
