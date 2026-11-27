@@ -8,7 +8,7 @@
   <title>Kas DKM | Masjid Jami Al-Ikhlas</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="style.css?v=upz-20261127e">
+  <link rel="stylesheet" href="style.css?v=upz-20261127f">
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -428,28 +428,30 @@
       <div>
         <p class="eyebrow green">UNIT PENGUMPUL ZAKAT</p>
         <h2>Laporan Pengumpulan dan Pendistribusian</h2>
-        <p class="muted">Total pengumpulan diambil otomatis dari menu Perhimpunan. Pembagian ke DKM/RT/RW, desa, kecamatan dan kabupaten dihitung menurut persentase Form C DKM/RT/RW BAZNAS.</p>
+        <p class="muted">Total pengumpulan diambil otomatis dari menu Perhimpunan, lalu dibagi menurut persentase Form C DKM/RT/RW BAZNAS.</p>
       </div>
     </section>
     <section id="lapYearPanel" class="panel upz-year-panel hidden"><p class="help-text"><b id="lapYearNote"></b><br>Tahun dan data kop diatur di <a href="#profil">Profil &rsaquo; Data Kop UPZ</a>.</p></section>
     <section class="panel">
-      <div class="section-heading list-heading">
+      <div class="upz-lap-head">
         <div><p class="eyebrow green">FORM C DKM/RT/RW</p><h3 id="lapTitle">Laporan Tahun</h3></div>
-        <div id="lapTools" class="report-actions hidden">
-          <label class="print-date-field" for="lapTglLaporan">Tanggal laporan<input id="lapTglLaporan" type="date"></label>
+        <div id="lapTools" class="upz-lap-actions hidden">
+          <label class="upz-lap-date" for="lapTglLaporan">Tanggal laporan<input id="lapTglLaporan" type="date"></label>
           <button id="lapPrintBtn" class="btn btn-primary" type="button">Cetak Form C (PDF)</button>
           <button id="lapPrintBlankBtn" class="btn btn-outline" type="button">Form Kosong</button>
         </div>
       </div>
-      <p class="help-text">Nama warga tidak ditampilkan. Beras tidak termasuk karena Form C hanya memuat nilai Rupiah.</p>
       <div class="phbi-summary upz-summary">
         <div><span>Jumlah Muzaki</span><b id="lapMuzaki">0</b></div>
         <div><span>Jumlah Mustahik</span><b id="lapMustahik">0</b></div>
         <div><span>Total Pengumpulan</span><b id="lapTotal" class="in">Rp 0</b></div>
         <div><span>Tetap di DKM/RT/RW</span><b id="lapDkm">Rp 0</b></div>
       </div>
-      <div id="lapTable" class="upz-pub-scroll"><p class="empty-state">Memuat data...</p></div>
     </section>
+    <div class="upz-lap-sec"><h3>Rincian per jenis dana</h3><span>Nama warga tidak ditampilkan</span></div>
+    <div id="lapCards" class="upz-lap-grid"><p class="empty-state">Memuat data...</p></div>
+    <div class="upz-lap-sec"><h3>Pembagian per tingkat</h3></div>
+    <div id="lapLevels" class="upz-lap-card"></div>
     </div>
     <div id="transaksi" data-page hidden>
     <section id="adminPanel" class="panel admin-panel hidden">
@@ -621,8 +623,8 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=upz-20261127e"></script>
-  <script src="upz.js?v=upz-20261127e"></script>
+  <script src="app.js?v=upz-20261127f"></script>
+  <script src="upz.js?v=upz-20261127f"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       if (window.lucide) window.lucide.createIcons();

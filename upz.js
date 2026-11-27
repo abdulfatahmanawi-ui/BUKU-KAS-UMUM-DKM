@@ -523,17 +523,32 @@
     let report = null, counts = { muzaki: 0, mustahik: 0 }, loading = false;
     const onPage = () => currentPage() === "upz-laporan";
 
-    function reportHtml(rep) {
-      const body = rep.rows.map((r) => {
-        if (r.head) return `<tr><td>${r.n}</td><td class="l b">${r.u}</td><td class="r b">${fz(r.base)}</td>${'<td class="x"></td>'.repeat(8)}<td></td><td></td></tr>`;
-        const cells = r.p.map((p, i) => (p || i === 0) ? `<td class="r">${pc(p)}</td><td class="r">${fz(r.amt[i])}</td>` : '<td class="x"></td><td class="x"></td>').join("");
-        return `<tr class="${r.bold ? "b" : ""}"><td>${r.n || ""}</td><td class="l ${r.n ? "b" : "ind"}">${r.u}</td><td class="r">${fz(r.base)}</td>${cells}<td class="r">${pc(r.tot)}</td><td class="r">${fz(r.row)}</td></tr>`;
+    const LEVELS = [["DKM/RT/RW", "#22664a"], ["Desa/Kelurahan", "#c9a65b"], ["Kecamatan", "#7fb394"], ["Kabupaten", "#8a6d3b"]];
+    const TITLES = { fitrah: "Zakat Fitrah", bis: "BIS Ramadhan", mal: "Zakat Mal Ramadhan", infak: "Infak Umum", fidyah: "Fidyah" };
+
+    function cardsHtml(rep) {
+      const keys = [...new Set(rep.rows.map((r) => r.k))];
+      return keys.map((k) => {
+        const rs = rep.rows.filter((r) => r.k === k && !r.head);
+        const base = rs[0].base;
+        const seg = [0, 0, 0, 0];
+        rs.forEach((r) => r.p.forEach((p, i) => { seg[i] += p; }));
+        const bar = seg.map((v, i) => v ? `<i style="width:${v}%;background:${LEVELS[i][1]}"></i>` : "").join("");
+        const rowsHtml = rs.map((r) => {
+          const head = rs.length > 1 ? `<div class="upz-lap-grp">${r.u.toUpperCase()} · ${pc(r.tot)} · ${rp(r.row)}</div>` : "";
+          const lines = r.p.map((p, i) => p ? `<div class="upz-lap-row"><span class="upz-lap-dot" style="background:${LEVELS[i][1]}"></span><span class="upz-lap-name">${LEVELS[i][0]}</span><span class="upz-lap-pct">${pc(p)}</span><span class="upz-lap-val">${rp(r.amt[i])}</span></div>` : "").join("");
+          return head + lines;
+        }).join("");
+        return `<div class="upz-lap-card"><div class="upz-lap-ct"><strong>${TITLES[k]}</strong><b>${rp(base)}</b></div><div class="upz-lap-bar">${bar}</div>${rowsHtml}</div>`;
       }).join("");
-      const foot = `<tr class="b"><td></td><td class="r">JUMLAH</td><td class="r">${fz(rep.totalAll)}</td>${rep.level.map((a) => `<td></td><td class="r">${fz(a)}</td>`).join("")}<td></td><td class="r">${fz(rep.totalDist)}</td></tr>`;
-      return `<table class="upz-lap-table"><thead>
-        <tr><th rowspan="3">NO</th><th rowspan="3">URAIAN</th><th rowspan="3">TOTAL<br>PENGUMPULAN<br>(100%) Rp.</th><th colspan="10">PENDISTRIBUSIAN</th></tr>
-        <tr><th colspan="2">DKM/RT/RW</th><th colspan="2">Desa/Kelurahan</th><th colspan="2">Kecamatan</th><th colspan="2">Kabupaten</th><th rowspan="2">%</th><th rowspan="2">Jumlah<br>Pendistribusian Rp.</th></tr>
-        <tr>${"<th>%</th><th>Jumlah Rp.</th>".repeat(4)}</tr></thead><tbody>${body}${foot}</tbody></table>`;
+    }
+
+    function levelsHtml(rep) {
+      const lines = LEVELS.map(([name, color], i) => {
+        const share = rep.totalDist ? (rep.level[i] / rep.totalDist * 100).toFixed(1).replace(/\.0$/, "").replace(".", ",") + "%" : "0%";
+        return `<div class="upz-lap-row"><span class="upz-lap-dot" style="background:${color}"></span><span class="upz-lap-name">${name}</span><span class="upz-lap-pct">${share}</span><span class="upz-lap-val">${rp(rep.level[i])}</span></div>`;
+      }).join("");
+      return lines + `<div class="upz-lap-tot"><span>Jumlah pendistribusian</span><span>${rp(rep.totalDist)}</span></div>`;
     }
 
     function show(titleYear) {
@@ -543,7 +558,8 @@
       $("lapMustahik").textContent = nf.format(counts.mustahik);
       $("lapTotal").textContent = rp(report.totalAll);
       $("lapDkm").textContent = rp(report.level[0]);
-      $("lapTable").innerHTML = reportHtml(report);
+      $("lapCards").innerHTML = cardsHtml(report);
+      $("lapLevels").innerHTML = levelsHtml(report);
     }
 
     function applyVisibility() {
@@ -585,7 +601,7 @@
         }
       } catch (err) {
         console.error("Laporan UPZ:", err);
-        $("lapTable").innerHTML = '<p class="empty-state">Data belum dapat dimuat. Pastikan SQL Perhimpunan, Pendistribusian dan akses publik sudah dijalankan di Supabase.</p>';
+        $("lapCards").innerHTML = '<p class="empty-state">Data belum dapat dimuat. Pastikan SQL Perhimpunan, Pendistribusian dan akses publik sudah dijalankan di Supabase.</p>';
       } finally {
         loading = false;
       }

@@ -1054,9 +1054,32 @@ input,select,textarea{border-radius:10px}.table-wrap{border-radius:13px}.toast{b
 .upz-pub-table th:first-child, .upz-pub-table td:first-child, .upz-pub-table th:nth-child(2), .upz-pub-table td:nth-child(2) { text-align: center; }
 .upz-pub-table th { font-size: 12px; color: #607168; background: #f3f7f3; }
 
-.upz-lap-table { width: 100%; min-width: 860px; border-collapse: collapse; font-size: 12px; background: #fff; color: #000; }
-.upz-lap-table th, .upz-lap-table td { border: 1px solid #000; padding: 4px 6px; text-align: center; }
-.upz-lap-table th { font-weight: 400; background: #fff; color: #000; font-size: 12px; }
-.upz-lap-table td.l { text-align: left; } .upz-lap-table td.r { text-align: right; }
-.upz-lap-table .b { font-weight: 700; } .upz-lap-table .ind { padding-left: 14px; } .upz-lap-table .x { background: #8c8c8c; }
-@media(max-width:640px){ #upz-laporan .list-heading, #upz-laporan .report-actions { flex-direction: column; align-items: stretch; } #upz-laporan .report-actions .btn, #upz-laporan .print-date-field input { width: 100%; } }
+
+/* Laporan UPZ (kartu) */
+.upz-lap-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.upz-lap-actions { display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap; }
+.upz-lap-date { display: grid; gap: 4px; font-size: 11px; font-weight: 700; color: var(--ink); }
+.upz-lap-date input { height: 40px; padding: 0 10px; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--ink); font: inherit; }
+.upz-lap-actions .btn { height: 40px; padding: 0 16px; }
+.upz-lap-sec { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin: 18px 2px 8px; }
+.upz-lap-sec h3 { margin: 0; font-size: 15px; }
+.upz-lap-sec span { font-size: 12px; color: var(--muted); }
+.upz-lap-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 12px; }
+.upz-lap-card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; box-shadow: var(--shadow); }
+.upz-lap-ct { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.upz-lap-ct strong { font-size: 15px; } .upz-lap-ct b { font-size: 17px; color: var(--green-800); }
+.upz-lap-bar { display: flex; height: 9px; border-radius: 99px; overflow: hidden; background: #eef2ee; margin: 10px 0 6px; }
+.upz-lap-bar i { display: block; height: 100%; }
+.upz-lap-grp { margin-top: 8px; font-size: 11px; font-weight: 700; letter-spacing: .04em; color: var(--muted); }
+.upz-lap-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px dashed var(--line); font-size: 13px; }
+.upz-lap-ct + .upz-lap-bar + .upz-lap-row, .upz-lap-grp + .upz-lap-row { border-top: 0; }
+.upz-lap-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.upz-lap-name { flex: 1; min-width: 0; }
+.upz-lap-pct { min-width: 44px; text-align: right; font-size: 12px; color: var(--muted); }
+.upz-lap-val { min-width: 96px; text-align: right; font-weight: 600; }
+.upz-lap-tot { display: flex; justify-content: space-between; gap: 8px; margin-top: 8px; padding-top: 10px; border-top: 2px solid var(--line); font-weight: 700; }
+@media (max-width: 700px) {
+  .upz-lap-head, .upz-lap-actions { flex-direction: column; align-items: stretch; }
+  .upz-lap-actions .btn, .upz-lap-date input { width: 100%; }
+  .upz-lap-grid { grid-template-columns: 1fr; }
+}
