@@ -14,6 +14,12 @@
   let fundsReady = false;
   let reportDataReady = false;
   const fundNames = {"DKM":"Kas DKM","PEMBANGUNAN":"Kas Pembangunan","PHBI":"Kas PHBI"};
+  // Baris pertama KOP laporan mengikuti kas yang dicetak.
+  const fundLetterheadTitles = {
+    DKM: "DEWAN KEMAKMURAN MASJID (DKM)",
+    PEMBANGUNAN: "PANITIA PEMBANGUNAN MASJID",
+    PHBI: "PANITIA PERINGATAN HARI BESAR ISLAM"
+  };
   const defaultCategories = {
     MASUK: ["Infak", "Sedekah", "Donasi Jamaah", "Wakaf", "Sumbangan", "Lainnya"],
     KELUAR: ["Operasional", "Listrik dan Air", "Kebersihan", "Pembangunan", "Kegiatan Masjid", "Perlengkapan", "Lainnya"]
@@ -1287,7 +1293,7 @@
       doc.setTextColor(0, 0, 0);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(11);
-      doc.text("DEWAN KEMAKMURAN MASJID (DKM)", pageWidth / 2, 16, { align: "center" });
+      doc.text(fundLetterheadTitles[fund] || fundLetterheadTitles.DKM, pageWidth / 2, 16, { align: "center" });
       doc.setFontSize(13);
       doc.text("MASJID JAMI' AL-IKHLAS DUSUN POKEK", pageWidth / 2, 23, { align: "center" });
       doc.setFont("helvetica", "normal");
@@ -1299,6 +1305,23 @@
       doc.setDrawColor(0, 0, 0);
       doc.setLineWidth(0.6);
       doc.line(margin, 34, pageWidth - margin, 34);
+    }
+
+    const letterheadTitle = fundLetterheadTitles[fund] || fundLetterheadTitles.DKM;
+    if (letterheadData) {
+      // kop.jpeg berukuran 1600x350 px: tutup baris pertama lalu tulis ulang sesuai kas.
+      const px = headerWidth / 1600;
+      doc.setFillColor(255, 255, 255);
+      doc.rect(margin + 300 * px, headerY + 104 * px, 1035 * px, 60 * px, "F");
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "bold");
+      let titleSize = 49 * px * 72 / 25.4;
+      doc.setFontSize(titleSize);
+      while (titleSize > 6 && doc.getTextWidth(letterheadTitle) > 984 * px) {
+        titleSize -= 0.2;
+        doc.setFontSize(titleSize);
+      }
+      doc.text(letterheadTitle, margin + 812 * px, headerY + 147 * px, { align: "center" });
     }
 
     const headerBottomY = headerY + headerHeight;
