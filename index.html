@@ -235,8 +235,11 @@
         <div class="section-heading">
           <div><p class="eyebrow green">PENGATURAN KATEGORI</p><h3 id="categoryManagerTitle">Kelola Kategori Transaksi</h3></div>
         </div>
-        <p class="help-text">Kategori pemasukan dan pengeluaran dikelola secara terpisah. Perubahan hanya dapat dilakukan administrator.</p>
+        <p class="help-text">Setiap kas (DKM, Pembangunan, PHBI) punya kategori pemasukan dan pengeluaran sendiri. Pilih kas terlebih dahulu. Perubahan hanya dapat dilakukan administrator.</p>
         <form id="categoryForm" class="category-form">
+          <label>Untuk kas
+            <select id="categoryFund"><option value="DKM">Kas DKM</option><option value="PEMBANGUNAN">Kas Pembangunan</option><option value="PHBI">Kas PHBI</option></select>
+          </label>
           <label>Untuk jenis transaksi
             <select id="categoryType"><option value="MASUK">Pemasukan</option><option value="KELUAR">Pengeluaran</option></select>
           </label>
@@ -246,8 +249,8 @@
           <button class="btn btn-primary" type="submit" id="addCategoryBtn">Tambah Kategori</button>
         </form>
         <div class="category-columns">
-          <div><h4>Kategori Pemasukan</h4><div id="incomeCategoryList" class="category-list"><p class="help-text">Memuat kategori...</p></div></div>
-          <div><h4>Kategori Pengeluaran</h4><div id="expenseCategoryList" class="category-list"><p class="help-text">Memuat kategori...</p></div></div>
+          <div><h4 id="incomeCategoryTitle">Kategori Pemasukan</h4><div id="incomeCategoryList" class="category-list"><p class="help-text">Memuat kategori...</p></div></div>
+          <div><h4 id="expenseCategoryTitle">Kategori Pengeluaran</h4><div id="expenseCategoryList" class="category-list"><p class="help-text">Memuat kategori...</p></div></div>
         </div>
         <p id="categoryMessage" class="form-message" role="status"></p>
       </section>

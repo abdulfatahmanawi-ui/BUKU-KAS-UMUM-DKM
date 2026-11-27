@@ -18,8 +18,11 @@
     MASUK: ["Infak", "Sedekah", "Donasi Jamaah", "Wakaf", "Sumbangan", "Lainnya"],
     KELUAR: ["Operasional", "Listrik dan Air", "Kebersihan", "Pembangunan", "Kegiatan Masjid", "Perlengkapan", "Lainnya"]
   };
-  let transactionCategories = { MASUK: [], KELUAR: [] };
-  let categoryRecords = { MASUK: [], KELUAR: [] };
+  const fundIds = Object.keys(fundNames);
+  const emptyCategoryMap = () => Object.fromEntries(fundIds.map((id) => [id, { MASUK: [], KELUAR: [] }]));
+  let transactionCategories = emptyCategoryMap();
+  let categoryRecords = emptyCategoryMap();
+  let categoryFundReady = true;
   let isAdmin = false;
   let currentUser = null;
   let toastTimer = null;
@@ -452,13 +455,19 @@
     el.classList.toggle("success", success);
   }
 
-  function categoriesFor(type) {
-    return transactionCategories[type] || defaultCategories[type] || [];
+  function currentCategoryFund() {
+    const select = $("categoryFund");
+    return select && fundIds.includes(select.value) ? select.value : "DKM";
+  }
+
+  function categoriesFor(type, fund = $("transactionFund").value || "DKM") {
+    return (transactionCategories[fund] || {})[type] || defaultCategories[type] || [];
   }
 
   function renderCategoryOptions(selected = "") {
     const type = $("transactionType").value || "MASUK";
-    const categories = [...categoriesFor(type)];
+    const fund = $("transactionFund").value || "DKM";
+    const categories = [...categoriesFor(type, fund)];
     if (selected && !categories.includes(selected)) categories.unshift(selected);
     $("transactionCategory").innerHTML = categories.length
       ? categories.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("")
@@ -467,9 +476,11 @@
   }
 
   function renderCategoryLists() {
+    const fund = currentCategoryFund();
+    const fundLabel = fundNames[fund];
     const render = (type, targetId) => {
       const target = $(targetId);
-      const rows = categoryRecords[type] || [];
+      const rows = (categoryRecords[fund] && categoryRecords[fund][type]) || [];
       target.innerHTML = rows.length ? rows.map((row) => `
         <div class="category-item"><span>${escapeHtml(row.name)}</span>
           <div class="category-actions">
@@ -480,24 +491,42 @@
     };
     render("MASUK", "incomeCategoryList");
     render("KELUAR", "expenseCategoryList");
+    const incomeTitle = $("incomeCategoryTitle");
+    const expenseTitle = $("expenseCategoryTitle");
+    if (incomeTitle) incomeTitle.textContent = "Kategori Pemasukan " + fundLabel;
+    if (expenseTitle) expenseTitle.textContent = "Kategori Pengeluaran " + fundLabel;
   }
 
   async function loadCategories() {
     if (!client) return;
-    const { data, error } = await client.from("transaction_categories")
-      .select("id, category_type, name").order("name", { ascending: true });
+    let result = await client.from("transaction_categories")
+      .select("id, category_type, name, fund").order("name", { ascending: true });
+    categoryFundReady = true;
+    // Jika kolom fund belum ada (migrasi per kas belum dijalankan), kategori lama
+    // dipakai bersama oleh semua kas agar aplikasi tetap berjalan.
+    if (result.error && ["42703", "PGRST204"].includes(result.error.code)) {
+      categoryFundReady = false;
+      result = await client.from("transaction_categories")
+        .select("id, category_type, name").order("name", { ascending: true });
+    }
+    const { data, error } = result;
+    transactionCategories = emptyCategoryMap();
+    categoryRecords = emptyCategoryMap();
     if (error) {
       console.error("Memuat kategori:", error);
-      transactionCategories = { MASUK: [...defaultCategories.MASUK], KELUAR: [...defaultCategories.KELUAR] };
-      categoryRecords = { MASUK: [], KELUAR: [] };
+      fundIds.forEach((id) => { transactionCategories[id] = { MASUK: [...defaultCategories.MASUK], KELUAR: [...defaultCategories.KELUAR] }; });
       setCategoryMessage("Tabel kategori belum tersedia. Jalankan supabase-migration-kategori-transaksi.sql di Supabase.");
     } else {
-      transactionCategories = { MASUK: [], KELUAR: [] };
-      categoryRecords = { MASUK: [], KELUAR: [] };
       (data || []).forEach((row) => {
         const type = row.category_type === "in" ? "MASUK" : row.category_type === "out" ? "KELUAR" : "";
-        if (type) { transactionCategories[type].push(row.name); categoryRecords[type].push(row); }
+        if (!type) return;
+        const targets = categoryFundReady ? [row.fund] : fundIds;
+        targets.filter((id) => categoryRecords[id]).forEach((id) => {
+          transactionCategories[id][type].push(row.name);
+          categoryRecords[id][type].push(row);
+        });
       });
+      if (!categoryFundReady) setCategoryMessage("Jalankan supabase-migration-kategori-per-kas.sql di Supabase agar tiap kas punya kategori sendiri.");
     }
     renderCategoryOptions($("transactionCategory").value);
     renderCategoryLists();
@@ -506,15 +535,20 @@
   async function addCategory(event) {
     event.preventDefault();
     if (!isAdmin) return;
+    const fund = currentCategoryFund();
     const type = $("categoryType").value;
     const name = $("newCategoryName").value.trim();
     if (!name) return;
-    if (categoriesFor(type).some((item) => item.toLocaleLowerCase() === name.toLocaleLowerCase())) {
-      setCategoryMessage("Kategori tersebut sudah ada.");
+    if (!categoryFundReady) {
+      setCategoryMessage("Jalankan supabase-migration-kategori-per-kas.sql di Supabase terlebih dahulu.");
+      return;
+    }
+    if (categoriesFor(type, fund).some((item) => item.toLocaleLowerCase() === name.toLocaleLowerCase())) {
+      setCategoryMessage(`Kategori tersebut sudah ada di ${fundNames[fund]}.`);
       return;
     }
     const { error } = await client.from("transaction_categories").insert({
-      category_type: type === "MASUK" ? "in" : "out", name
+      fund, category_type: type === "MASUK" ? "in" : "out", name
     });
     if (error) {
       setCategoryMessage(`Gagal menambahkan kategori: ${error.message}`);
@@ -523,28 +557,31 @@
     $("newCategoryName").value = "";
     await loadCategories();
     renderCategoryOptions();
-    setCategoryMessage("Kategori berhasil ditambahkan.", true);
+    setCategoryMessage(`Kategori berhasil ditambahkan ke ${fundNames[fund]}.`, true);
   }
 
   async function editCategory(type, id) {
     if (!isAdmin) return;
-    const row = (categoryRecords[type] || []).find((item) => String(item.id) === String(id));
+    const fund = currentCategoryFund();
+    const row = ((categoryRecords[fund] || {})[type] || []).find((item) => String(item.id) === String(id));
     if (!row) return;
-    const nextName = window.prompt("Ubah nama kategori:", row.name);
+    const nextName = window.prompt(`Ubah nama kategori (${fundNames[fund]}):`, row.name);
     if (nextName === null) return;
     const name = nextName.trim();
     if (!name) { setCategoryMessage("Nama kategori tidak boleh kosong."); return; }
     if (name.length > 80) { setCategoryMessage("Nama kategori maksimal 80 karakter."); return; }
-    if (name.toLocaleLowerCase() !== row.name.toLocaleLowerCase() && categoriesFor(type).some((item) => item.toLocaleLowerCase() === name.toLocaleLowerCase())) {
+    if (name.toLocaleLowerCase() !== row.name.toLocaleLowerCase() && categoriesFor(type, fund).some((item) => item.toLocaleLowerCase() === name.toLocaleLowerCase())) {
       setCategoryMessage("Kategori dengan nama tersebut sudah ada."); return;
     }
-    // Perbarui nama kategori pada transaksi lama juga, agar riwayat, laporan,
-    // pencarian, dan ekspor menampilkan nama kategori terbaru.
+    // Perbarui nama kategori pada transaksi lama di kas ini saja, agar riwayat,
+    // laporan, pencarian, dan ekspor menampilkan nama kategori terbaru.
     const transactionKind = type === "MASUK" ? "in" : "out";
-    const { error: historyError } = await client.from("transactions")
+    let historyQuery = client.from("transactions")
       .update({ category: name })
       .eq("category", row.name)
       .eq("kind", transactionKind);
+    if (fundsReady) historyQuery = historyQuery.eq("fund", fund);
+    const { error: historyError } = await historyQuery;
     if (historyError) {
       setCategoryMessage(`Gagal memperbarui kategori pada riwayat transaksi: ${historyError.message}`);
       return;
@@ -557,11 +594,12 @@
     }
     await Promise.all([loadCategories(), loadTransactions()]);
     renderCategoryOptions();
-    setCategoryMessage(`Kategori berhasil diubah menjadi "${name}". Nama kategori pada riwayat transaksi lama juga sudah diperbarui.`, true);
+    setCategoryMessage(`Kategori berhasil diubah menjadi "${name}". Nama kategori pada riwayat ${fundNames[fund]} juga sudah diperbarui.`, true);
   }
 
   async function deleteCategory(type, name, id) {
-    if (!isAdmin || !window.confirm(`Hapus kategori "${name}" dari daftar ${type === "MASUK" ? "pemasukan" : "pengeluaran"}? Transaksi lama tetap tersimpan.`)) return;
+    const fund = currentCategoryFund();
+    if (!isAdmin || !window.confirm(`Hapus kategori "${name}" dari daftar ${type === "MASUK" ? "pemasukan" : "pengeluaran"} ${fundNames[fund]}? Transaksi lama tetap tersimpan.`)) return;
     const { error } = await client.from("transaction_categories").delete().eq("id", id);
     if (error) {
       setCategoryMessage(`Gagal menghapus kategori: ${error.message}`);
@@ -1816,6 +1854,8 @@
       renderCategoryOptions();
     });
     $("categoryForm").addEventListener("submit", addCategory);
+    $("categoryFund").addEventListener("change", renderCategoryLists);
+    $("transactionFund").addEventListener("change", () => renderCategoryOptions());
     [$("incomeCategoryList"), $("expenseCategoryList")].forEach((list) => list.addEventListener("click", (event) => {
       const editButton = event.target.closest("[data-category-edit]");
       const deleteButton = event.target.closest("[data-category-delete]");
