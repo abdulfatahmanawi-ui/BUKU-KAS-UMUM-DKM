@@ -1328,10 +1328,10 @@
         head: [["No.", "Tanggal", "Kategori", "Uraian", "Pemasukan", "Pengeluaran", "Sisa"]],
         body: rows,
         foot: [[
-          { content: "Jumlah", colSpan: 4, styles: { halign: "center", fontStyle: "bold" } },
-          rupiah(totals.income),
-          rupiah(totals.expense),
-          rupiah(closingBalance)
+          { content: "Jumlah", colSpan: 4, styles: { halign: "right", fontStyle: "bold" } },
+          { content: rupiah(totals.income), styles: { halign: "right" } },
+          { content: rupiah(totals.expense), styles: { halign: "right" } },
+          { content: rupiah(closingBalance), styles: { halign: "right" } }
         ]],
         showHead: "everyPage",
         showFoot: "lastPage",
@@ -1367,6 +1367,7 @@
           fillColor: [255, 255, 255],
           textColor: [0, 0, 0],
           fontStyle: "bold",
+          halign: "right",
           lineColor: [0, 0, 0],
           lineWidth: 0.2
         },
@@ -1414,11 +1415,11 @@
     doc.text("Ketua DKM", leftCenter, roleY + 5, { align: "center" });
     doc.text("Bendahara", rightCenter, roleY + 5, { align: "center" });
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    if (officerName("ketua")) doc.text(officerName("ketua"), leftCenter, roleY + 29, { align: "center", maxWidth: 58 });
-    if (officerName("bendahara")) doc.text(officerName("bendahara"), rightCenter, roleY + 29, { align: "center", maxWidth: 58 });
+    doc.setFontSize(11);
+    if (officerName("ketua")) doc.text(officerName("ketua"), leftCenter, roleY + 29, { align: "center", maxWidth: 62 });
+    if (officerName("bendahara")) doc.text(officerName("bendahara"), rightCenter, roleY + 29, { align: "center", maxWidth: 62 });
 
-    const signatureLineY = roleY + 34;
+    const signatureLineY = roleY + 31;
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.25);
     doc.line(leftCenter - 24, signatureLineY, leftCenter + 24, signatureLineY);
