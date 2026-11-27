@@ -1047,3 +1047,9 @@ input,select,textarea{border-radius:10px}.table-wrap{border-radius:13px}.toast{b
 .upz-year-panel a { color: var(--green-900); font-weight: 700; }
 #upz-pendistribusian .list-heading, #upz-pendistribusian .report-actions { }
 @media(max-width:640px){ #upz-pendistribusian .list-heading, #upz-pendistribusian .report-actions { flex-direction: column; align-items: stretch; } #upz-pendistribusian .report-actions .btn, #upz-pendistribusian .print-date-field input { width: 100%; } }
+
+.upz-pub-scroll { overflow-x: auto; }
+.upz-pub-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.upz-pub-table th, .upz-pub-table td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+.upz-pub-table th:first-child, .upz-pub-table td:first-child, .upz-pub-table th:nth-child(2), .upz-pub-table td:nth-child(2) { text-align: center; }
+.upz-pub-table th { font-size: 12px; color: #607168; background: #f3f7f3; }

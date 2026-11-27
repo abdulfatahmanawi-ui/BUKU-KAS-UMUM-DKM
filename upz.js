@@ -138,7 +138,8 @@
     async function loadAll(force = false) {
       applyVisibility();
       const c = ctx();
-      if (!onPage() || !c.client || !c.isAdmin) return;
+      if (!onPage() || !c.client) return;
+      if (!c.isAdmin) { loadPublic(); return; }
       if (!settings) {
         if (!settingsFailed) loadSettings();
         else el("List").innerHTML = '<p class="empty-state">Data belum dapat dimuat. Jalankan setup-upz-supabase.sql di Supabase terlebih dahulu.</p>';
@@ -162,6 +163,42 @@
       } finally {
         loading = false;
       }
+    }
+
+    /* ---------- Tampilan publik: tanpa nama warga ---------- */
+    let pubLoaded = false;
+    let pubLoading = false;
+
+    async function loadPublic(force = false) {
+      const c = ctx();
+      if (pubLoading || (pubLoaded && !force)) return;
+      pubLoading = true;
+      try {
+        const { data, error } = await c.client.rpc(cfg.rpc);
+        if (error) throw error;
+        renderPublic(data || {});
+        pubLoaded = true;
+      } catch (err) {
+        console.error(cfg.title + " publik:", err);
+        el("PubList").innerHTML = `<p class="empty-state">Data belum dapat dimuat. Jalankan ${cfg.publicSqlFile} di Supabase terlebih dahulu.</p>`;
+      } finally {
+        pubLoading = false;
+      }
+    }
+
+    function renderPublic(d) {
+      const list = Array.isArray(d.rows) ? d.rows : [];
+      const th = d.tahun_hijriah, tm = d.tahun_masehi;
+      el("PubTitle").textContent = th ? `${cfg.title} Tahun ${th} H / ${tm} M` : cfg.title;
+      const all = sums(list);
+      el("PubCount").textContent = nf.format(list.length);
+      el("PubJiwa").textContent = nf.format(all.jiwa);
+      el("PubBeras").textContent = nf1.format(all.beras);
+      el("PubTotal").textContent = rp(all.jumlah);
+      if (!list.length) { el("PubList").innerHTML = `<p class="empty-state">${cfg.emptyText}</p>`; return; }
+      const f = (v) => (num(v) ? nf.format(num(v)) : "-");
+      const body = list.map((r, i) => `<tr><td>${i + 1}</td><td>${r.rt || r.rw ? `${esc(r.rt || "-")}/${esc(r.rw || "-")}` : "-"}</td><td>${f(r.jumlah_jiwa)}</td><td>${f(r.zakat_fitrah_uang)}</td><td>${num(r.zakat_fitrah_beras) ? nf1.format(num(r.zakat_fitrah_beras)) : "-"}</td><td>${f(r.bis_ramadhan)}</td><td>${f(r.zakat_mal)}</td><td>${f(r.infak_umum)}</td><td>${f(r.fidyah)}</td><td><b>${nf.format(total(r))}</b></td></tr>`).join("");
+      el("PubList").innerHTML = `<div class="upz-pub-scroll"><table class="upz-pub-table"><thead><tr><th>No</th><th>RT/RW</th><th>Jiwa</th><th>Fitrah (Rp)</th><th>Beras (kg)</th><th>BIS (Rp)</th><th>Zakat Mal (Rp)</th><th>Infak (Rp)</th><th>Fidyah (Rp)</th><th>Jumlah (Rp)</th></tr></thead><tbody>${body}</tbody></table></div>`;
     }
 
     function filtered() {
@@ -425,7 +462,7 @@
         if (ed) beginEdit(ed.dataset.edit);
         if (del) remove(del.dataset.del);
       });
-      document.addEventListener("kas:auth", () => { if (!ctx().isAdmin) { rows = []; loadedFor = null; } loadAll(); });
+      document.addEventListener("kas:auth", () => { if (!ctx().isAdmin) { rows = []; loadedFor = null; } pubLoaded = false; loadAll(); });
       document.addEventListener("kas:page", () => loadAll());
       document.addEventListener("upz:settings", (e) => loadAll(Boolean(e.detail?.changed)));
       el("TglLaporan").value = todayJakarta();
@@ -436,7 +473,7 @@
   }
 
   const perhimpunan = createModule({
-    prefix: "upz", page: "upz-perhimpunan", table: "upz_muzaki", sqlFile: "setup-upz-supabase.sql",
+    prefix: "upz", rpc: "upz_public_perhimpunan", publicSqlFile: "supabase-migration-upz-publik.sql", page: "upz-perhimpunan", table: "upz_muzaki", sqlFile: "setup-upz-supabase.sql",
     title: "Perhimpunan", form: "A", docTitle: "DATA PENGUMPULAN", groupHead: "PENGUMPULAN",
     nameHead: "NAMA MUZAKI (Kepala Keluarga)", fileName: "Form-A-UPZ",
     addTitle: "Tambah Muzaki", editTitle: "Edit Muzaki", addedText: "Data muzaki ditambahkan.",
@@ -444,7 +481,7 @@
   });
 
   const pendistribusian = createModule({
-    prefix: "dist", page: "upz-pendistribusian", table: "upz_mustahik", sqlFile: "supabase-migration-upz-pendistribusian.sql",
+    prefix: "dist", rpc: "upz_public_pendistribusian", publicSqlFile: "supabase-migration-upz-publik.sql", page: "upz-pendistribusian", table: "upz_mustahik", sqlFile: "supabase-migration-upz-pendistribusian.sql",
     title: "Pendistribusian", form: "B", docTitle: "DATA PENDISTRIBUSIAN", groupHead: "PENDISTRIBUSIAN",
     nameHead: "NAMA MUSTAHIK DAN DHUAFA (Kepala Keluarga)", fileName: "Form-B-UPZ",
     addTitle: "Tambah Mustahik / Dhuafa", editTitle: "Edit Mustahik / Dhuafa", addedText: "Data mustahik ditambahkan.",

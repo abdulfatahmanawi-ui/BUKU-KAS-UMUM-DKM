@@ -8,7 +8,7 @@
   <title>Kas DKM | Masjid Jami Al-Ikhlas</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="style.css?v=upz-20261127c">
+  <link rel="stylesheet" href="style.css?v=upz-20261127d">
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -298,7 +298,15 @@
       </div>
     </section>
     <section id="upzGuest" class="panel">
-      <p class="help-text">Data perhimpunan UPZ memuat nama warga (muzaki), sehingga hanya dapat dilihat dan dikelola oleh pengurus. Silakan login sebagai administrator.</p>
+      <div class="section-heading"><div><p class="eyebrow green">RINCIAN TRANSAKSI</p><h3 id="upzPubTitle">Perhimpunan</h3></div></div>
+      <p class="help-text">Nama warga tidak ditampilkan demi menjaga privasi. Data lengkap hanya dapat dilihat pengurus.</p>
+      <div class="phbi-summary upz-summary">
+        <div><span>Jumlah Muzaki</span><b id="upzPubCount">0</b></div>
+        <div><span>Jumlah Jiwa</span><b id="upzPubJiwa">0</b></div>
+        <div><span>Beras (kg)</span><b id="upzPubBeras">0</b></div>
+        <div><span>Total Uang</span><b id="upzPubTotal" class="in">Rp 0</b></div>
+      </div>
+      <div id="upzPubList" class="upz-pub-wrap"><p class="empty-state">Memuat data...</p></div>
     </section>
     <div id="upzAdmin" class="hidden">
       <section class="panel upz-year-panel"><p class="help-text"><b id="upzYearNote"></b><br>Tahun dan data kop diatur di <a href="#profil">Profil &rsaquo; Data Kop UPZ</a>.</p></section>
@@ -356,7 +364,15 @@
       </div>
     </section>
     <section id="distGuest" class="panel">
-      <p class="help-text">Data pendistribusian UPZ memuat nama warga penerima (mustahik), sehingga hanya dapat dilihat dan dikelola oleh pengurus. Silakan login sebagai administrator.</p>
+      <div class="section-heading"><div><p class="eyebrow green">RINCIAN TRANSAKSI</p><h3 id="distPubTitle">Pendistribusian</h3></div></div>
+      <p class="help-text">Nama warga tidak ditampilkan demi menjaga privasi. Data lengkap hanya dapat dilihat pengurus.</p>
+      <div class="phbi-summary upz-summary">
+        <div><span>Jumlah Penerima</span><b id="distPubCount">0</b></div>
+        <div><span>Jumlah Jiwa</span><b id="distPubJiwa">0</b></div>
+        <div><span>Beras (kg)</span><b id="distPubBeras">0</b></div>
+        <div><span>Total Uang</span><b id="distPubTotal" class="in">Rp 0</b></div>
+      </div>
+      <div id="distPubList" class="upz-pub-wrap"><p class="empty-state">Memuat data...</p></div>
     </section>
     <div id="distAdmin" class="hidden">
       <section class="panel upz-year-panel"><p class="help-text"><b id="distYearNote"></b><br>Tahun dan data kop diatur di <a href="#profil">Profil &rsaquo; Data Kop UPZ</a>.</p></section>
@@ -575,8 +591,8 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=upz-20261127c"></script>
-  <script src="upz.js?v=upz-20261127c"></script>
+  <script src="app.js?v=upz-20261127d"></script>
+  <script src="upz.js?v=upz-20261127d"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       if (window.lucide) window.lucide.createIcons();
