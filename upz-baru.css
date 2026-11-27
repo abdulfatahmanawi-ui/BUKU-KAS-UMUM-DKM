@@ -76,3 +76,12 @@
 @media(max-width:640px){.upz-page .upz-hero{padding:20px 18px;align-items:flex-start;flex-wrap:wrap}.upz-form-tag{margin-left:0}.upz-hero-ico{width:46px;height:46px}.upz-stat{padding:12px}.upz-stat i{width:36px;height:36px}.upz-stat b{font-size:16px}}
 .upz-page .upz-search{margin-bottom:14px}
 .upz-page .upz-search label{display:grid;gap:6px;font-size:11.5px;font-weight:700;color:#35493e}
+/* Perbaikan HP: hilangkan celah kosong di bawah "Tanggal laporan" */
+.upz-page .print-date-field,.upz-page .upz-lap-date{min-width:0}
+@media(max-width:900px){
+.upz-page .report-actions,.upz-page .upz-lap-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;justify-content:stretch;align-items:end}
+.upz-page .report-actions .print-date-field,.upz-page .upz-lap-actions .upz-lap-date{grid-column:1/-1;flex:none;height:auto}
+.upz-page .report-actions .btn,.upz-page .upz-lap-actions .btn{width:100%;min-height:44px;height:auto;padding:10px 8px}
+.upz-page .upz-head{align-items:stretch}
+}
+@media(max-width:380px){.upz-page .report-actions,.upz-page .upz-lap-actions{grid-template-columns:1fr}}
