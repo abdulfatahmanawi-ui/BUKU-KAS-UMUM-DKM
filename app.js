@@ -1464,7 +1464,84 @@
     doc.text(`PERIODE ${period.toUpperCase()}`, pageWidth / 2, headerBottomY + 20 + eventOffset, { align: "center" });
 
     const tableStartY = headerBottomY + 26 + eventOffset;
-    if (typeof doc.autoTable === "function") {
+    const reportFormat = ($("reportFormat") && $("reportFormat").value) || "buku";
+    if (reportFormat === "pisah") {
+      // Format 2: pemasukan dan pengeluaran dipisah, ditutup rekapitulasi.
+      if (typeof doc.autoTable !== "function") {
+        showToast("Komponen tabel PDF tidak tersedia. Silakan muat ulang aplikasi.");
+        return;
+      }
+      const line = { lineColor: [0, 0, 0], lineWidth: 0.2 };
+      const gridStyle = {
+        theme: "grid",
+        styles: { font: "helvetica", fontSize: 7.5, textColor: [0, 0, 0], cellPadding: 1.8, valign: "middle", overflow: "linebreak", fillColor: [255, 255, 255], ...line },
+        headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "bold", fontSize: 8, halign: "center", ...line },
+        bodyStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], ...line },
+        footStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "bold", halign: "right", ...line }
+      };
+      const tableMargin = { left: margin, right: margin, top: 12, bottom: 18 };
+      const toRows = (type) => monthItems
+        .filter((item) => item.type === type)
+        .map((item, index) => [index + 1, formatNumericDate(item.transaction_date), item.category || "", item.description || "", rupiah(Number(item.amount || 0))]);
+      const sectionTitle = (text, y) => {
+        doc.setTextColor(0, 0, 0);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        doc.text(text, margin, y);
+      };
+      const sectionColumns = {
+        0: { cellWidth: 10, halign: "center" },
+        1: { cellWidth: 24, halign: "center" },
+        2: { cellWidth: 32 },
+        3: { cellWidth: 78, halign: "left" },
+        4: { cellWidth: 46, halign: "right" }
+      };
+      let sectionY = tableStartY;
+      const drawSection = (title, rowsData, footLabel, footValue) => {
+        if (sectionY + 26 > pageHeight - 18) {
+          doc.addPage();
+          sectionY = 18;
+        }
+        sectionTitle(title, sectionY);
+        doc.autoTable({
+          startY: sectionY + 2,
+          margin: tableMargin,
+          tableWidth: contentWidth,
+          head: [["No.", "Tanggal", "Kategori", "Uraian", "Jumlah"]],
+          body: rowsData.length ? rowsData : [[{ content: "Tidak ada transaksi pada periode ini", colSpan: 5, styles: { halign: "center", fontStyle: "italic" } }]],
+          foot: [[
+            { content: footLabel, colSpan: 4, styles: { halign: "right", fontStyle: "bold" } },
+            { content: rupiah(footValue), styles: { halign: "right" } }
+          ]],
+          showHead: "everyPage",
+          showFoot: "lastPage",
+          rowPageBreak: "avoid",
+          columnStyles: sectionColumns,
+          ...gridStyle
+        });
+        sectionY = doc.lastAutoTable.finalY + 7;
+      };
+      drawSection("A. PEMASUKAN", toRows("MASUK"), "Total Pemasukan", totals.income);
+      drawSection("B. PENGELUARAN", toRows("KELUAR"), "Total Pengeluaran", totals.expense);
+      if (sectionY + 34 > pageHeight - 18) {
+        doc.addPage();
+        sectionY = 18;
+      }
+      sectionTitle("C. REKAPITULASI", sectionY);
+      doc.autoTable({
+        startY: sectionY + 2,
+        margin: tableMargin,
+        tableWidth: contentWidth,
+        body: [
+          [isYearly ? "Sisa Saldo Tahun Lalu" : "Sisa Saldo Bulan Lalu", rupiah(openingBalance)],
+          ["Total Pemasukan", rupiah(totals.income)],
+          ["Total Pengeluaran", "(" + rupiah(totals.expense) + ")"],
+          [{ content: "Saldo Akhir", styles: { fontStyle: "bold" } }, { content: rupiah(closingBalance), styles: { fontStyle: "bold", halign: "right" } }]
+        ],
+        columnStyles: { 0: { cellWidth: contentWidth - 46, halign: "left" }, 1: { cellWidth: 46, halign: "right" } },
+        ...gridStyle
+      });
+    } else if (typeof doc.autoTable === "function") {
       doc.autoTable({
         startY: tableStartY,
         margin: { left: margin, right: margin, top: 12, bottom: 18 },
