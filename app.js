@@ -965,6 +965,9 @@
       const mosqueName = String(mosqueProfile.name || "Masjid Jami' Al-Ikhlas")
         .replace(/^DKM\s*/i, "").toUpperCase();
 
+      const labelX = 12;
+      const colonX = 63;
+
       // Helper agar teks panjang mengecil secara proporsional dan tidak menabrak elemen lain.
       const drawFitText = (text, x, y, maxWidth, size, minSize, style = "normal", align = "left", baseline = "alphabetic") => {
         doc.setFont("helvetica", style);
@@ -977,6 +980,12 @@
         const textOptions = { baseline };
         if (align !== "left") textOptions.align = align;
         doc.text(String(text), x, y, textOptions);
+      };
+
+      // Label kolom keterangan: ukuran besar, otomatis mengecil jika terlalu panjang untuk kolomnya.
+      const drawLabel = (text, y) => {
+        doc.setTextColor(70, 80, 88);
+        drawFitText(text, labelX, y, colonX - labelX - 3, 12.5, 9, "normal");
       };
 
       // Bingkai kwitansi dengan warna identitas DKM.
@@ -1028,19 +1037,15 @@
       doc.line(11, 36, pageWidth - 11, 36);
 
       // Area isi menggunakan kolom label dan nilai yang konsisten.
-      const labelX = 12;
-      const colonX = 63;
+      // (labelX dan colonX dideklarasikan di atas agar bisa dipakai drawLabel)
       const valueX = 68;
       const valueRight = pageWidth - 12;
       const valueWidth = valueRight - valueX;
 
-      doc.setTextColor(70, 80, 88);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9.2);
-      doc.text(partyLabel, labelX, 48.5);
+      drawLabel(partyLabel, 48.5);
       doc.setTextColor(0, 0, 0);
       doc.text(":", colonX, 48.5);
-      drawFitText(partyName, valueX, 48.5, valueWidth, 10.2, 8.2, "bold");
+      drawFitText(partyName, valueX, 48.5, valueWidth, 14.5, 10, "bold");
       doc.setDrawColor(190, 202, 196);
       doc.setLineWidth(0.2);
       for (let x = valueX; x < valueRight; x += 2.3) {
@@ -1048,49 +1053,40 @@
       }
 
       // Terbilang pada bidang hijau dengan ruang yang cukup.
-      doc.setTextColor(70, 80, 88);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9.2);
-      doc.text("Uang Sejumlah", labelX, 64.8);
+      drawLabel("Uang Sejumlah", 64.8);
       doc.setTextColor(0, 0, 0);
       doc.text(":", colonX, 64.8);
       doc.setFillColor(91, 151, 61);
       doc.roundedRect(valueX, 57.5, valueWidth, 14, 1, 1, "F");
       doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
-      let wordFontSize = 9.2;
+      let wordFontSize = 13.5;
       doc.setFontSize(wordFontSize);
       let wordLines = doc.splitTextToSize(capitalizedWords, valueWidth - 8);
-      while (wordLines.length > 2 && wordFontSize > 7.4) {
+      while (wordLines.length > 2 && wordFontSize > 9.5) {
         wordFontSize -= 0.2;
         doc.setFontSize(wordFontSize);
         wordLines = doc.splitTextToSize(capitalizedWords, valueWidth - 8);
       }
-      doc.text(wordLines.slice(0, 2), valueX + 4, wordLines.length > 1 ? 62.5 : 66.2, {
+      doc.text(wordLines.slice(0, 2), valueX + 4, wordLines.length > 1 ? 62.3 : 66.1, {
         maxWidth: valueWidth - 8
       });
 
       // Keterangan pembayaran dan kategori.
-      doc.setTextColor(70, 80, 88);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9.2);
-      doc.text("Untuk Pembayaran", labelX, 82);
+      drawLabel("Untuk Pembayaran", 82);
       doc.setTextColor(0, 0, 0);
       doc.text(":", colonX, 82);
-      drawFitText(description, valueX, 82, valueWidth, 9.8, 8, "normal");
+      drawFitText(description, valueX, 82, valueWidth, 14, 9.5, "normal");
       doc.setDrawColor(190, 202, 196);
       doc.setLineWidth(0.2);
       for (let x = valueX; x < valueRight; x += 2.3) {
         doc.line(x, 86.5, Math.min(x + 0.95, valueRight), 86.5);
       }
 
-      doc.setTextColor(70, 80, 88);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9.2);
-      doc.text("Pos / Kategori Kas", labelX, 97);
+      drawLabel("Pos / Kategori Kas", 97);
       doc.setTextColor(0, 0, 0);
       doc.text(":", colonX, 97);
-      drawFitText(category, valueX, 97, valueWidth, 9.8, 8, "normal");
+      drawFitText(category, valueX, 97, valueWidth, 14, 9.5, "normal");
 
       doc.setDrawColor(0, 91, 64);
       doc.setLineWidth(0.45);
@@ -1099,17 +1095,17 @@
       // Nominal transaksi dibuat paling menonjol di bagian bawah kiri.
       doc.setTextColor(70, 80, 88);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(8.2);
+      doc.setFontSize(11);
       doc.text("JUMLAH NOMINAL", 12, 114);
       doc.setFillColor(0, 91, 34);
       doc.setDrawColor(220, 174, 28);
       doc.setLineWidth(0.75);
       doc.roundedRect(11, 116, 86, 19, 1, 1, "FD");
       doc.setTextColor(255, 255, 255);
-      drawFitText(rupiah(item.amount), 54, 128.3, 78, 15, 11, "bold", "center");
+      drawFitText(rupiah(item.amount), 54, 129.6, 78, 20, 11, "bold", "center");
       doc.setTextColor(0, 91, 64);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(8.2);
+      doc.setFontSize(10.5);
       doc.text("Bukti transaksi tercatat", 12, 141);
 
       // Tanda tangan penyetor/penerima dan bendahara.
@@ -1117,9 +1113,9 @@
       const rightCenter = 218;
       doc.setTextColor(75, 85, 94);
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(8.8);
+      doc.setFontSize(11.5);
       doc.text(partyCaption, leftCenter, 114, { align: "center" });
-      drawFitText(receiptPlaceDate, rightCenter, 114, 66, 8.8, 7.2, "normal", "center");
+      drawFitText(receiptPlaceDate, rightCenter, 114, 66, 11.5, 8, "normal", "center");
 
       doc.setDrawColor(145, 154, 160);
       doc.setLineWidth(0.3);
@@ -1127,25 +1123,25 @@
       doc.line(rightCenter - 25, 137, rightCenter + 25, 137);
 
       doc.setTextColor(32, 42, 50);
-      drawFitText(partyName, leftCenter, 143.2, 58, 9, 7, "bold", "center");
+      drawFitText(partyName, leftCenter, 143, 58, 11.5, 8, "bold", "center");
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(9);
-      doc.text("Bendahara DKM", rightCenter, 143.2, { align: "center" });
+      doc.setFontSize(11.5);
+      doc.text("Bendahara DKM", rightCenter, 143, { align: "center" });
       if (officerName("bendahara")) {
         doc.setFont("helvetica", "normal");
-        doc.setFontSize(7.5);
-        drawFitText(officerName("bendahara"), rightCenter, 148, 58, 7.5, 6.5, "normal", "center");
+        doc.setFontSize(10);
+        drawFitText(officerName("bendahara"), rightCenter, 148.5, 58, 10, 7.5, "normal", "center");
       }
       doc.setTextColor(115, 125, 133);
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(7.5);
-      if (!officerName("bendahara")) doc.text("Pengurus DKM", rightCenter, 148, { align: "center" });
+      doc.setFontSize(10);
+      if (!officerName("bendahara")) doc.text("Pengurus DKM", rightCenter, 148.5, { align: "center" });
 
       // Catatan kaki tetap berada di dalam bingkai.
       doc.setTextColor(145, 154, 160);
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(6.7);
-      doc.text("* Kwitansi ini merupakan bukti pencatatan resmi sistem kas DKM Al-Ikhlas", 12, 155);
+      doc.setFontSize(8);
+      doc.text("* Kwitansi ini merupakan bukti pencatatan resmi sistem kas DKM Al-Ikhlas", 12, 153.6);
 
       const safeName = String(mosqueProfile.name || "Masjid").replace(/[^a-z0-9-]/gi, "_");
       doc.save(`Kwitansi_${incoming ? "Pemasukan" : "Pengeluaran"}_${safeName}_${receiptDate}.pdf`);
