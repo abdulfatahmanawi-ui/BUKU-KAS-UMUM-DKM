@@ -148,6 +148,7 @@
     $("officersAdminPanel").classList.toggle("hidden", !isAdmin);
     $("profileSubnav").classList.toggle("hidden", !isAdmin);
     document.querySelectorAll("[data-profile-section]").forEach((panel) => panel.classList.add("hidden"));
+    document.dispatchEvent(new CustomEvent("kas:auth"));
   }
 
   async function verifyAdmin(user) {
@@ -1914,7 +1915,7 @@
     const fundRoutes = { "kas-dkm": "DKM", "kas-pembangunan": "PEMBANGUNAN", "kas-phbi-maulid": "PHBI", "kas-phbi-isro": "PHBI" };
     const activeFund = fundRoutes[requested];
     const selected = activeFund ? "transaksi" :
-      (["dashboard", "jadwal-sholat", "profil"].includes(requested) ? requested : "dashboard");
+      (["dashboard", "jadwal-sholat", "profil", "upz-perhimpunan"].includes(requested) ? requested : "dashboard");
 
     if (activeFund) {
       const label = fundLabel(activeFund);
@@ -1927,6 +1928,7 @@
       renderTable();
     }
     updatePhbiControls();
+    ["upzTabs", "upzSubLinks"].forEach((id) => $(id).classList.toggle("hidden", requested !== "upz-perhimpunan"));
 
     document.querySelectorAll("[data-page]").forEach((page) => {
       page.hidden = page.id !== selected;
@@ -1940,7 +1942,12 @@
       if (link.hash === "#" + requested) link.setAttribute("aria-current", "page");
       else link.removeAttribute("aria-current");
       if (link.dataset.kas === "PHBI") link.classList.toggle("is-parent", requested.startsWith("kas-phbi"));
+      if (link.dataset.upz) {
+        link.classList.toggle("is-parent", requested === "upz-perhimpunan");
+        link.removeAttribute("aria-current");
+      }
     });
+    document.dispatchEvent(new CustomEvent("kas:page", { detail: { page: selected } }));
   }
 
   function bindEvents() {
@@ -2033,6 +2040,14 @@
       if (receiptButton) printReceipt(receiptButton.dataset.receipt);
     });
   }
+
+  // Konteks yang dipakai modul tambahan (upz.js).
+  window.KAS_CTX = {
+    get client() { return client; },
+    get isAdmin() { return isAdmin; },
+    get profile() { return mosqueProfile; },
+    showToast, rupiah, loadImageAsPngDataUrl
+  };
 
   async function init() {
     $("currentYear").textContent = new Date().getFullYear();

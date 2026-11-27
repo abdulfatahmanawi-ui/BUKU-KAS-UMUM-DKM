@@ -997,3 +997,22 @@ input,select,textarea{border-radius:10px}.table-wrap{border-radius:13px}.toast{b
 @media (max-width: 760px) { .phbi-summary { grid-template-columns: 1fr; } }
 .phbi-notice { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 0 0 14px; padding: 10px 12px; border: 1px solid #e6d3a1; border-radius: 10px; background: #fff8e6; font-size: 12px; }
 .phbi-notice-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ===== UPZ - Perhimpunan ===== */
+.upz-settings-grid, .upz-form { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-items: end; }
+.upz-settings-grid label, .upz-form label { display: grid; gap: 6px; font-size: 13px; font-weight: 600; }
+.upz-form .upz-wide { grid-column: span 2; }
+.upz-settings-grid .form-actions { grid-column: 1 / -1; }
+.upz-form input[readonly] { background: #f3f6f2; font-weight: 700; }
+.upz-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.upz-filters { grid-template-columns: 1fr; }
+.upz-table { min-width: 1100px; }
+.upz-table td.number, .upz-table th.number { text-align: right; white-space: nowrap; }
+.upz-table tfoot td { font-weight: 800; background: #f3f6f2; }
+@media (max-width: 900px) {
+  .upz-settings-grid, .upz-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .upz-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .upz-form .upz-wide { grid-column: 1 / -1; }
+}
