@@ -923,3 +923,32 @@ input,select,textarea{border-radius:10px}.table-wrap{border-radius:13px}.toast{b
 .mini-btn:hover { background:#edf5ee; }
 .mini-btn.delete { color:#a33a35; border-color:#e8c9c7; }
 @media(max-width:640px) { .profile-subnav { display:grid; grid-template-columns:1fr; } .profile-tab { justify-content:flex-start; } .category-item { align-items:flex-start; } }
+
+/* ===== Pembaruan: logo transparan lebih besar & kartu kas 3 baris di HP ===== */
+.brand-mark,
+.brand-mark.has-logo {
+  width: 72px; height: 72px; flex-basis: 72px;
+  padding: 0; border: 0; border-radius: 0;
+  background: transparent; box-shadow: none;
+}
+.brand-mark img { border-radius: 0; filter: drop-shadow(0 4px 10px rgba(0,0,0,.22)); }
+
+@media (max-width: 760px) {
+  .brand-mark, .brand-mark.has-logo { width: 62px; height: 62px; flex-basis: 62px; }
+  .brand-mark img { border-radius: 0; }
+  .summary-grid.fund-details { grid-template-columns: 1fr; gap: 12px; }
+  .fund-detail:last-child { grid-column: auto; }
+  .fund-detail { padding: 18px; }
+  .fund-detail h3 { font-size: 17px; }
+  .fund-detail .fund-kicker { font-size: 9px; letter-spacing: 1px; }
+  .fund-detail dt, .fund-detail dd { font-size: 12px; }
+  .fund-balance dd { font-size: 20px; }
+}
+@media (max-width: 430px) {
+  .brand-mark, .brand-mark.has-logo { width: 56px; height: 56px; flex-basis: 56px; }
+  .summary-grid.fund-details { gap: 12px; }
+  .fund-detail { padding: 18px; }
+  .fund-detail .fund-kicker { font-size: 9px; }
+  .fund-detail dt, .fund-detail dd { font-size: 12px; }
+  .fund-balance dd { font-size: 20px; }
+}

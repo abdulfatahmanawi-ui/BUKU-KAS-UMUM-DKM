@@ -193,7 +193,9 @@
     mark.replaceChildren();
     if (mosqueProfile.logo_url) {
       const image = document.createElement("img");
-      image.src = mosqueProfile.logo_url;
+      // Logo header memakai PNG transparan lokal; jika gagal dimuat, pakai logo dari profil.
+      image.src = "logo-masjid.png";
+      image.onerror = () => { image.onerror = null; image.src = mosqueProfile.logo_url; };
       image.alt = `Logo ${mosqueProfile.name || "masjid"}`;
       mark.appendChild(image);
       mark.classList.add("has-logo");
