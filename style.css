@@ -1006,13 +1006,28 @@ input,select,textarea{border-radius:10px}.table-wrap{border-radius:13px}.toast{b
 .upz-form input[readonly] { background: #f3f6f2; font-weight: 700; }
 .upz-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .upz-filters { grid-template-columns: 1fr; }
-.upz-table { min-width: 1100px; }
-.upz-table td.number, .upz-table th.number { text-align: right; white-space: nowrap; }
-.upz-table tfoot td { font-weight: 800; background: #f3f6f2; }
 @media (max-width: 900px) {
   .upz-settings-grid, .upz-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .upz-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 520px) {
   .upz-form .upz-wide { grid-column: 1 / -1; }
+}
+
+.upz-list { display: grid; gap: 10px; }
+.upz-item { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: #fff; }
+.upz-item-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 15px; }
+.upz-item-top strong:last-child { white-space: nowrap; color: var(--green-900); }
+.upz-item-addr { margin: 3px 0 8px; font-size: 13px; color: #607168; overflow-wrap: anywhere; }
+.upz-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.upz-chip { padding: 3px 9px; border-radius: 7px; background: #f1f4f0; color: #4d5f54; font-size: 12px; font-weight: 600; }
+.upz-chip-main { background: #e3f1e8; color: #14573b; }
+.upz-item-actions { display: flex; gap: 8px; margin-top: 10px; }
+.upz-item-actions .btn { flex: 1; min-height: 36px; padding: 6px 10px; font-size: 13px; }
+@media (max-width: 900px) {
+  .upz-settings-grid, .upz-form { grid-template-columns: 1fr; }
+  .upz-form .upz-wide { grid-column: auto; }
+  .upz-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #upz-perhimpunan .list-heading, #upz-perhimpunan .report-actions { flex-direction: column; align-items: stretch; }
+  #upz-perhimpunan .report-actions .btn, #upz-perhimpunan .print-date-field input { width: 100%; }
 }

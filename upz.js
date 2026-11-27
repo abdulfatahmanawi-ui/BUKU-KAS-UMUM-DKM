@@ -35,6 +35,7 @@
       desa: stripPrefix(p.village, /^(desa|kelurahan)\s+/i),
       kecamatan: stripPrefix(p.district, /^kecamatan\s+/i),
       ketua_upz: "",
+      ketua_rw: "",
       no_hp: ""
     };
   }
@@ -64,6 +65,7 @@
     $("upzDesa").value = settings.desa || "";
     $("upzKecamatan").value = settings.kecamatan || "";
     $("upzKetua").value = settings.ketua_upz || "";
+    $("upzKetuaRw").value = settings.ketua_rw || "";
     $("upzHp").value = settings.no_hp || "";
   }
 
@@ -89,7 +91,7 @@
       render();
     } catch (err) {
       console.error("UPZ:", err);
-      $("upzTableBody").innerHTML = '<tr><td colspan="13" class="empty-state">Data belum dapat dimuat. Jalankan setup-upz-supabase.sql di Supabase terlebih dahulu.</td></tr>';
+      $("upzList").innerHTML = '<p class="empty-state">Data belum dapat dimuat. Jalankan setup-upz-supabase.sql di Supabase terlebih dahulu.</p>';
       c.showToast?.("Data UPZ gagal dimuat. Pastikan setup-upz-supabase.sql sudah dijalankan.");
     } finally {
       loading = false;
@@ -121,27 +123,26 @@
     $("upzSumTotal").textContent = rp(all.jumlah);
 
     const list = filtered();
-    const body = $("upzTableBody");
+    const box = $("upzList");
     if (!list.length) {
-      body.innerHTML = `<tr><td colspan="13" class="empty-state">${rows.length ? "Tidak ada data yang cocok." : "Belum ada data muzaki untuk tahun ini."}</td></tr>`;
+      box.innerHTML = `<p class="empty-state">${rows.length ? "Tidak ada data yang cocok." : "Belum ada data muzaki untuk tahun ini."}</p>`;
       return;
     }
-    const s = sums(list);
-    body.innerHTML = list.map((r, i) => `<tr>
-      <td>${i + 1}</td><td>${esc(r.nama)}</td><td>${esc(r.alamat)}</td><td>${esc(r.rt)}/${esc(r.rw)}</td>
-      <td class="number">${nf.format(num(r.jumlah_jiwa))}</td>
-      <td class="number">${nf.format(num(r.zakat_fitrah_uang))}</td>
-      <td class="number">${nf1.format(num(r.zakat_fitrah_beras))}</td>
-      <td class="number">${nf.format(num(r.bis_ramadhan))}</td>
-      <td class="number">${nf.format(num(r.zakat_mal))}</td>
-      <td class="number">${nf.format(num(r.infak_umum))}</td>
-      <td class="number">${nf.format(num(r.fidyah))}</td>
-      <td class="number"><b>${nf.format(total(r))}</b></td>
-      <td class="action-col"><button class="btn btn-outline" type="button" data-upz-edit="${r.id}">Edit</button> <button class="btn btn-muted" type="button" data-upz-del="${r.id}">Hapus</button></td>
-    </tr>`).join("") + `<tr class="upz-total-row"><td colspan="4"><b>JUMLAH</b></td>
-      <td class="number"><b>${nf.format(s.jiwa)}</b></td><td class="number"><b>${nf.format(s.fitrah)}</b></td><td class="number"><b>${nf1.format(s.beras)}</b></td>
-      <td class="number"><b>${nf.format(s.bis)}</b></td><td class="number"><b>${nf.format(s.mal)}</b></td><td class="number"><b>${nf.format(s.infak)}</b></td>
-      <td class="number"><b>${nf.format(s.fidyah)}</b></td><td class="number"><b>${nf.format(s.jumlah)}</b></td><td></td></tr>`;
+    const chip = (label, value, cls = "") => num(value) ? `<span class="upz-chip ${cls}">${label} ${nf.format(num(value))}</span>` : "";
+    box.innerHTML = list.map((r) => {
+      const addr = [r.alamat, (r.rt || r.rw) ? `RT ${r.rt || "-"}/RW ${r.rw || "-"}` : "", num(r.jumlah_jiwa) ? `${nf.format(num(r.jumlah_jiwa))} jiwa` : ""].filter(Boolean).join(" · ");
+      const chips = [
+        chip("Fitrah", r.zakat_fitrah_uang, "upz-chip-main"),
+        num(r.zakat_fitrah_beras) ? `<span class="upz-chip upz-chip-main">Beras ${nf1.format(num(r.zakat_fitrah_beras))} kg</span>` : "",
+        chip("BIS", r.bis_ramadhan), chip("Zakat mal", r.zakat_mal), chip("Infak", r.infak_umum), chip("Fidyah", r.fidyah)
+      ].join("");
+      return `<article class="upz-item">
+        <div class="upz-item-top"><strong>${esc(r.nama)}</strong><strong>${rp(total(r))}</strong></div>
+        <div class="upz-item-addr">${esc(addr)}</div>
+        <div class="upz-chips">${chips || '<span class="upz-chip">Belum ada nominal</span>'}</div>
+        <div class="upz-item-actions"><button class="btn btn-outline" type="button" data-upz-edit="${r.id}">Edit</button><button class="btn btn-muted" type="button" data-upz-del="${r.id}">Hapus</button></div>
+      </article>`;
+    }).join("");
   }
 
   /* ---------- Form ---------- */
@@ -239,7 +240,7 @@
     const payload = {
       id: 1, tahun_hijriah: th, tahun_masehi: tm,
       nama_dkm: $("upzDkm").value.trim(), desa: $("upzDesa").value.trim(),
-      kecamatan: $("upzKecamatan").value.trim(), ketua_upz: $("upzKetua").value.trim(), no_hp: $("upzHp").value.trim()
+      kecamatan: $("upzKecamatan").value.trim(), ketua_upz: $("upzKetua").value.trim(), ketua_rw: $("upzKetuaRw").value.trim(), no_hp: $("upzHp").value.trim()
     };
     $("upzSaveSettingsBtn").disabled = true;
     const { error } = await c.client.from("upz_settings").upsert(payload);
@@ -248,6 +249,16 @@
     settings = { ...settings, ...payload };
     setMsg("upzSettingsMsg", "Data kop disimpan.", true);
     await loadAll(true);
+  }
+
+  function todayJakarta() {
+    const p = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jakarta", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    return p;
+  }
+
+  function longDate(value) {
+    const [y, m, d] = String(value || todayJakarta()).split("-").map(Number);
+    return new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(y, m - 1, d)));
   }
 
   /* ---------- Cetak PDF Form A ---------- */
@@ -365,6 +376,26 @@
       }
     });
 
+    // Titimangsa dan tanda tangan
+    const pageH = doc.internal.pageSize.getHeight();
+    let y = (doc.lastAutoTable?.finalY || 80) + 10;
+    if (y + 46 > pageH - 8) { doc.addPage(); y = 20; }
+    const sx = W - M - 60;       // blok kanan: Ketua UPZ
+    const lx = M + 20;           // blok kiri: Ketua RW
+    doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+    doc.text(`${s.desa || "........."}, ${longDate($("upzTglLaporan").value)}`, sx + 30, y, { align: "center" });
+    doc.text("Mengetahui,", lx + 30, y + 6, { align: "center" });
+    doc.text("Ketua RW 004", lx + 30, y + 11, { align: "center" });
+    doc.text("Ketua UPZ", sx + 30, y + 11, { align: "center" });
+    const ny = y + 36;
+    doc.setFont("helvetica", "bold");
+    const rwName = blank ? "" : (s.ketua_rw || "");
+    const upzName = blank ? "" : (s.ketua_upz || "");
+    doc.text(rwName || "(                                   )", lx + 30, ny, { align: "center" });
+    doc.text(upzName || "(                                   )", sx + 30, ny, { align: "center" });
+    if (rwName) { doc.setLineWidth(0.3); doc.line(lx + 30 - doc.getTextWidth(rwName) / 2, ny + 1, lx + 30 + doc.getTextWidth(rwName) / 2, ny + 1); }
+    if (upzName) { doc.setLineWidth(0.3); doc.line(sx + 30 - doc.getTextWidth(upzName) / 2, ny + 1, sx + 30 + doc.getTextWidth(upzName) / 2, ny + 1); }
+
     doc.save(`Form-A-UPZ-${blank ? "Kosong-" : ""}${s.tahun_hijriah}H.pdf`);
   }
 
@@ -381,7 +412,7 @@
       const h = parseInt($("upzTahunH").value, 10);
       if (h) $("upzTahunM").value = h + 579;
     });
-    $("upzTableBody").addEventListener("click", (e) => {
+    $("upzList").addEventListener("click", (e) => {
       const ed = e.target.closest("[data-upz-edit]");
       const del = e.target.closest("[data-upz-del]");
       if (ed) beginEdit(ed.dataset.upzEdit);
@@ -389,6 +420,7 @@
     });
     document.addEventListener("kas:auth", () => { if (!ctx().isAdmin) { settings = null; rows = []; loadedFor = null; } loadAll(); });
     document.addEventListener("kas:page", () => loadAll());
+    $("upzTglLaporan").value = todayJakarta();
     resetForm();
     applyVisibility();
   }

@@ -8,7 +8,7 @@
   <title>Kas DKM | Masjid Jami Al-Ikhlas</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="style.css?v=upz-20261127">
+  <link rel="stylesheet" href="style.css?v=upz-20261127b">
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -292,6 +292,7 @@
           <label>Desa/Kelurahan<input id="upzDesa" type="text" maxlength="120"></label>
           <label>Kecamatan<input id="upzKecamatan" type="text" maxlength="120"></label>
           <label>Nama Ketua UPZ<input id="upzKetua" type="text" maxlength="120"></label>
+          <label>Nama Ketua RW 004<input id="upzKetuaRw" type="text" maxlength="120"></label>
           <label>Nomor HP<input id="upzHp" type="tel" maxlength="40"></label>
           <div class="form-actions"><button id="upzSaveSettingsBtn" class="btn btn-primary" type="submit">Simpan Data Kop</button><span id="upzSettingsMsg" class="form-message" role="status"></span></div>
         </form>
@@ -326,6 +327,7 @@
         <div class="section-heading list-heading">
           <div><p class="eyebrow green">DAFTAR MUZAKI</p><h3 id="upzListTitle">Perhimpunan Tahun</h3></div>
           <div class="report-actions">
+            <label class="print-date-field" for="upzTglLaporan">Tanggal laporan<input id="upzTglLaporan" type="date"></label>
             <button id="upzPrintBtn" class="btn btn-primary" type="button">Cetak Form A (PDF)</button>
             <button id="upzPrintBlankBtn" class="btn btn-outline" type="button">Form Kosong</button>
           </div>
@@ -337,12 +339,7 @@
           <div><span>Total Uang</span><b id="upzSumTotal" class="in">Rp 0</b></div>
         </div>
         <div class="filters upz-filters"><label class="search-field">Cari muzaki<input id="upzSearch" type="search" placeholder="Cari nama atau alamat..."></label></div>
-        <div class="table-wrap">
-          <table class="upz-table">
-            <thead><tr><th>No</th><th>Nama Muzaki</th><th>Alamat</th><th>RT/RW</th><th class="number">Jiwa</th><th class="number">Fitrah (Rp)</th><th class="number">Beras (kg)</th><th class="number">BIS</th><th class="number">Zakat Mal</th><th class="number">Infak</th><th class="number">Fidyah</th><th class="number">Jumlah (Rp)</th><th class="action-col">Aksi</th></tr></thead>
-            <tbody id="upzTableBody"><tr><td colspan="13" class="empty-state">Memuat data...</td></tr></tbody>
-          </table>
-        </div>
+        <div id="upzList" class="upz-list"><p class="empty-state">Memuat data...</p></div>
       </section>
     </div>
     </div>
@@ -516,8 +513,8 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=upz-20261127"></script>
-  <script src="upz.js?v=upz-20261127"></script>
+  <script src="app.js?v=upz-20261127b"></script>
+  <script src="upz.js?v=upz-20261127b"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       if (window.lucide) window.lucide.createIcons();
