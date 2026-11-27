@@ -1172,3 +1172,9 @@ input,select,textarea{border-radius:10px}.table-wrap{border-radius:13px}.toast{b
 }
 @media(max-width:380px){.upz-page .report-actions,.upz-page .upz-lap-actions{grid-template-columns:1fr}}
 .upz-page [hidden]{display:none!important}
+/* HP: kartu ringkasan berbaris ke bawah (1 kolom) */
+@media(max-width:640px){
+.upz-page .upz-stats{grid-template-columns:1fr;gap:10px}
+.upz-page .upz-stat{padding:14px 16px}
+.upz-page .upz-stat b{font-size:20px;white-space:nowrap;overflow-wrap:normal}
+}
