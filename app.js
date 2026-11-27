@@ -22,7 +22,10 @@
   };
   // Kegiatan PHBI yang dapat dipilih untuk judul laporan (transaksi tetap satu Kas PHBI).
   const phbiEventNames = { MAULID_NABI: "Maulid Nabi", ISRO_MIRAJ: "Isro' Mi'raj" };
-  let selectedPhbiEvent = "";
+  const phbiRoutes = { "kas-phbi-maulid": "MAULID_NABI", "kas-phbi-isro": "ISRO_MIRAJ" };
+  const fundLabel = (fund) => fund === "PHBI" ? "Kas PHBI - " + phbiEventNames[activePhbiEvent] : (fundNames[fund] || "Kas");
+  let activePhbiEvent = "MAULID_NABI";
+  let phbiEventReady = false;
   const defaultCategories = {
     MASUK: ["Infak", "Sedekah", "Donasi Jamaah", "Wakaf", "Sumbangan", "Lainnya"],
     KELUAR: ["Operasional", "Listrik dan Air", "Kebersihan", "Pembangunan", "Kegiatan Masjid", "Perlengkapan", "Lainnya"]
@@ -637,8 +640,11 @@
         if (data.length < 500) return { data: rows };
       }
     };
-    let result = await query(columns + ", fund");
-    const missingFund = ["42703", "PGRST204"].includes(result.error?.code);
+    const isMissingColumn = (err) => ["42703", "PGRST204"].includes(err?.code);
+    let result = await query(columns + ", fund, phbi_event");
+    phbiEventReady = !result.error;
+    if (result.error && isMissingColumn(result.error)) result = await query(columns + ", fund");
+    const missingFund = isMissingColumn(result.error);
     if (missingFund) result = await query(columns);
     const { data, error } = result;
     fundsReady = !error && !missingFund;
@@ -678,6 +684,7 @@
       party_name: receiptNames.get(row.id) || "",
       // Normalisasi skema Supabase yang sudah ada ke format internal aplikasi.
       fund: row.fund || "DKM",
+      phbi_event: row.phbi_event || null,
       transaction_date: row.date,
       type: kindToType(row.kind)
     }));
@@ -717,7 +724,8 @@
       const searchMatch = !search ||
         String(item.description || "").toLowerCase().includes(search) ||
         String(item.category || "").toLowerCase().includes(search);
-      return (fund === "all" || item.fund === fund) && monthMatch && typeMatch && searchMatch;
+      const eventMatch = fund !== "PHBI" || !phbiEventReady || item.phbi_event === activePhbiEvent;
+      return (fund === "all" || item.fund === fund) && eventMatch && monthMatch && typeMatch && searchMatch;
     });
   }
 
@@ -738,6 +746,7 @@
   }
 
   function renderTable() {
+    updatePhbiControls();
     const items = getFilteredTransactions();
     const summary = calculate(items);
     const colspan = isAdmin ? 6 : 5;
@@ -852,7 +861,7 @@
     $("transactionType").value = type;
     renderCategoryOptions();
     updatePartyNameLabel();
-    $("formTitle").textContent = (type === "MASUK" ? "Tambah Pemasukan " : "Tambah Pengeluaran ") + fundNames[fund];
+    $("formTitle").textContent = (type === "MASUK" ? "Tambah Pemasukan " : "Tambah Pengeluaran ") + fundLabel(fund);
     $("saveTransactionBtn").textContent = type === "MASUK" ? "Simpan Pemasukan" : "Simpan Pengeluaran";
     $("transactionForm").classList.remove("hidden");
     $("transactionForm").scrollIntoView({ behavior: "smooth", block: "center" });
@@ -871,7 +880,7 @@
     $("transactionDescription").value = item.description;
     $("transactionPartyName").value = item.party_name || "";
     updatePartyNameLabel();
-    $("formTitle").textContent = "Edit Transaksi " + fundNames[item.fund];
+    $("formTitle").textContent = "Edit Transaksi " + fundLabel(item.fund);
     $("saveTransactionBtn").textContent = "Simpan Perubahan";
     $("transactionForm").classList.remove("hidden");
     $("cancelEditBtn").classList.remove("hidden");
@@ -891,6 +900,14 @@
       description: $("transactionDescription").value.trim()
     };
     if (fundsReady) payload.fund = $("transactionFund").value;
+    if (payload.fund === "PHBI") {
+      if (!phbiEventReady) {
+        setFormMessage("Jalankan supabase-migration-phbi-kegiatan.sql di Supabase agar transaksi PHBI dapat disimpan per kegiatan.");
+        return;
+      }
+      // Kegiatan mengikuti sub menu yang sedang dibuka (Maulid Nabi / Isro' Mi'raj).
+      payload.phbi_event = activePhbiEvent;
+    }
     const partyName = $("transactionPartyName").value.trim();
 
     if (!payload.date || !payload.description || !payload.category || !partyName || !Number.isFinite(payload.amount) || payload.amount <= 0) {
@@ -1198,12 +1215,34 @@
       doc.save(`Kwitansi_${incoming ? "Pemasukan" : "Pengeluaran"}_${safeName}_${receiptDate}.pdf`);
     }
   function updatePhbiControls() {
-    const isPhbi = $("fundFilter").value === "PHBI";
-    $("phbiSubmenu").classList.toggle("hidden", !isPhbi);
-    $("phbiEventDateField").classList.toggle("hidden", !isPhbi);
-    document.querySelectorAll("[data-phbi-event]").forEach((button) => {
-      button.setAttribute("aria-pressed", String(button.dataset.phbiEvent === selectedPhbiEvent));
-    });
+    const onPhbi = $("fundFilter").value === "PHBI" && /^kas-phbi/.test(window.location.hash.slice(1));
+    const name = phbiEventNames[activePhbiEvent];
+    ["phbiTabs", "phbiSubLinks"].forEach((id) => $(id).classList.toggle("hidden", !onPhbi));
+    $("phbiEventDateField").classList.toggle("hidden", !onPhbi);
+    $("phbiSummary").classList.toggle("hidden", !onPhbi || !phbiEventReady);
+    if (onPhbi && phbiEventReady) {
+      const totals = calculate(transactions.filter((item) => item.fund === "PHBI" && item.phbi_event === activePhbiEvent));
+      $("phbiSumIncomeLabel").textContent = "Pemasukan " + name;
+      $("phbiSumExpenseLabel").textContent = "Pengeluaran " + name;
+      $("phbiSumBalanceLabel").textContent = "Saldo " + name;
+      $("phbiSumIncome").textContent = rupiah(totals.income);
+      $("phbiSumExpense").textContent = rupiah(totals.expense);
+      $("phbiSumBalance").textContent = rupiah(totals.balance);
+    }
+    const legacy = transactions.filter((item) => item.fund === "PHBI" && !item.phbi_event).length;
+    const showNotice = onPhbi && phbiEventReady && isAdmin && legacy > 0;
+    $("phbiNotice").classList.toggle("hidden", !showNotice);
+    if (showNotice) $("phbiNoticeText").textContent = `${legacy} transaksi PHBI lama belum punya kegiatan, sehingga belum tampil di Maulid Nabi maupun Isro' Mi'raj.`;
+  }
+
+  async function assignLegacyPhbi(eventKey) {
+    const legacy = transactions.filter((item) => item.fund === "PHBI" && !item.phbi_event);
+    if (!isAdmin || !legacy.length) return;
+    if (!window.confirm(`Masukkan ${legacy.length} transaksi PHBI lama ke kegiatan ${phbiEventNames[eventKey]}?`)) return;
+    const { error } = await client.from("transactions").update({ phbi_event: eventKey }).eq("fund", "PHBI").is("phbi_event", null);
+    if (error) { showToast("Gagal memperbarui transaksi: " + error.message); return; }
+    showToast("Transaksi PHBI lama dimasukkan ke " + phbiEventNames[eventKey] + ".");
+    await loadTransactions();
   }
 
   async function exportPdf() {
@@ -1220,9 +1259,8 @@
     const fundName = fundNames[fund];
     let phbiEventLine = "";
     if (fund === "PHBI") {
-      if (!phbiEventNames[selectedPhbiEvent]) {
-        showToast("Pilih kegiatan PHBI (Maulid Nabi atau Isro' Mi'raj) terlebih dahulu.");
-        $("phbiSubmenu").scrollIntoView({ block: "center" });
+      if (!phbiEventReady) {
+        showToast("Jalankan supabase-migration-phbi-kegiatan.sql di Supabase terlebih dahulu.");
         return;
       }
       const eventDateValue = $("phbiEventDate").value;
@@ -1235,7 +1273,7 @@
       const eventDateText = new Intl.DateTimeFormat("id-ID", {
         day: "numeric", month: "long", year: "numeric", timeZone: "UTC"
       }).format(new Date(Date.UTC(evYear, evMonth - 1, evDay)));
-      phbiEventLine = `${phbiEventNames[selectedPhbiEvent]} - ${eventDateText}`.toUpperCase();
+      phbiEventLine = `${phbiEventNames[activePhbiEvent]} - ${eventDateText}`.toUpperCase();
     }
     const monthValue = $("monthFilter").value;
     if (monthValue === "all") {
@@ -1262,7 +1300,7 @@
     const monthStart = isYearly ? `${year}-01-01` : `${monthValue}-01`;
     const monthEndDay = isYearly ? 31 : new Date(year, month, 0).getDate();
     const monthEnd = isYearly ? `${year}-12-31` : `${monthValue}-${String(monthEndDay).padStart(2, "0")}`;
-    const fundItems = transactions.filter((item) => item.fund === fund);
+    const fundItems = transactions.filter((item) => item.fund === fund && (fund !== "PHBI" || item.phbi_event === activePhbiEvent));
     const monthItems = fundItems.filter((item) => {
       const date = String(item.transaction_date || "");
       return date >= monthStart && date <= monthEnd;
@@ -1545,7 +1583,7 @@
 
     const safePeriod = period.replace(/[^a-z0-9-]/gi, "_");
     const safeName = String(mosqueProfile.name || "Masjid").replace(/[^a-z0-9-]/gi, "_");
-    const eventFileName = fund === "PHBI" ? "_" + phbiEventNames[selectedPhbiEvent].replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "") : "";
+    const eventFileName = fund === "PHBI" ? "_" + phbiEventNames[activePhbiEvent].replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "") : "";
     doc.save(`Laporan_${fundName.replaceAll(" ", "_")}${eventFileName}_${safeName}_${safePeriod}.pdf`);
   }
 
@@ -1867,18 +1905,24 @@
   }
 
   function renderPage() {
-    const requested = window.location.hash.slice(1);
-    const fundRoutes = { "kas-dkm": "DKM", "kas-pembangunan": "PEMBANGUNAN", "kas-phbi": "PHBI" };
+    let requested = window.location.hash.slice(1);
+    if (requested === "kas-phbi") {
+      requested = "kas-phbi-maulid";
+      window.history.replaceState(null, "", "#kas-phbi-maulid");
+    }
+    if (phbiRoutes[requested]) activePhbiEvent = phbiRoutes[requested];
+    const fundRoutes = { "kas-dkm": "DKM", "kas-pembangunan": "PEMBANGUNAN", "kas-phbi-maulid": "PHBI", "kas-phbi-isro": "PHBI" };
     const activeFund = fundRoutes[requested];
     const selected = activeFund ? "transaksi" :
       (["dashboard", "jadwal-sholat", "profil"].includes(requested) ? requested : "dashboard");
 
     if (activeFund) {
+      const label = fundLabel(activeFund);
       $("fundFilter").value = activeFund;
       if (!$("transactionId").value) $("transactionFund").value = activeFund;
-      $("transactionPageTitle").textContent = "Riwayat " + fundNames[activeFund];
+      $("transactionPageTitle").textContent = "Riwayat " + label;
       if (!$("transactionId").value) $("transactionForm").classList.add("hidden");
-      $("formTitle").textContent = "Tambah Transaksi " + fundNames[activeFund];
+      $("formTitle").textContent = "Tambah Transaksi " + label;
       $("exportPdfBtn").textContent = "Unduh PDF " + fundNames[activeFund];
       renderTable();
     }
@@ -1892,9 +1936,10 @@
       const target = activeTab?.dataset.profileTab || "profil-masjid";
       document.querySelectorAll("[data-profile-section]").forEach((panel) => panel.classList.toggle("hidden", panel.dataset.profileSection !== target));
     }
-    document.querySelectorAll(".section-nav a").forEach((link) => {
+    document.querySelectorAll(".section-nav a, .phbi-tabs a").forEach((link) => {
       if (link.hash === "#" + requested) link.setAttribute("aria-current", "page");
       else link.removeAttribute("aria-current");
+      if (link.dataset.kas === "PHBI") link.classList.toggle("is-parent", requested.startsWith("kas-phbi"));
     });
   }
 
@@ -1958,11 +2003,9 @@
       $("exportPdfBtn").textContent = name ? "Unduh PDF " + name : "Unduh PDF per Kas";
       updatePhbiControls();
     }
-    $("phbiSubmenu").addEventListener("click", (event) => {
-      const button = event.target.closest("[data-phbi-event]");
-      if (!button) return;
-      selectedPhbiEvent = button.dataset.phbiEvent;
-      updatePhbiControls();
+    $("phbiNotice").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-phbi-assign]");
+      if (button) assignLegacyPhbi(button.dataset.phbiAssign);
     });
     $("fundFilter").addEventListener("change", () => {
       updateReportButton();

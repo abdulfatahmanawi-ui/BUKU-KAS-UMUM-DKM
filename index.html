@@ -42,8 +42,16 @@
       <a href="#kas-dkm" data-kas="DKM"><i data-lucide="wallet" aria-hidden="true"></i><span>Kas DKM</span></a>
       <a href="#kas-pembangunan" data-kas="PEMBANGUNAN"><i data-lucide="building-2" aria-hidden="true"></i><span>Kas Pembangunan</span></a>
       <a href="#kas-phbi" data-kas="PHBI"><i data-lucide="calendar-days" aria-hidden="true"></i><span>Kas PHBI</span></a>
+      <div id="phbiSubLinks" class="phbi-sub-links hidden" aria-label="Kegiatan PHBI">
+        <a href="#kas-phbi-maulid" data-phbi-event="MAULID_NABI"><span>Maulid Nabi</span></a>
+        <a href="#kas-phbi-isro" data-phbi-event="ISRO_MIRAJ"><span>Isro' Mi'raj</span></a>
+      </div>
     </nav>
     <div class="main-content">
+    <nav id="phbiTabs" class="phbi-tabs hidden" aria-label="Kegiatan PHBI">
+      <a href="#kas-phbi-maulid" data-phbi-event="MAULID_NABI">Maulid Nabi</a>
+      <a href="#kas-phbi-isro" data-phbi-event="ISRO_MIRAJ">Isro' Mi'raj</a>
+    </nav>
     <div id="dashboard" data-page>
     <section class="intro-row">
       <div>
@@ -337,10 +345,17 @@
         </div>
       </div>
 
-      <div id="phbiSubmenu" class="phbi-submenu hidden" role="group" aria-label="Kegiatan PHBI untuk laporan">
-        <span class="phbi-submenu-label">Kegiatan PHBI (untuk cetak laporan)</span>
-        <button type="button" class="phbi-tab" data-phbi-event="MAULID_NABI" aria-pressed="false">Maulid Nabi</button>
-        <button type="button" class="phbi-tab" data-phbi-event="ISRO_MIRAJ" aria-pressed="false">Isro' Mi'raj</button>
+      <div id="phbiNotice" class="phbi-notice hidden" role="status">
+        <span id="phbiNoticeText"></span>
+        <span class="phbi-notice-actions">
+          <button type="button" class="btn btn-outline" data-phbi-assign="MAULID_NABI">Masukkan ke Maulid Nabi</button>
+          <button type="button" class="btn btn-outline" data-phbi-assign="ISRO_MIRAJ">Masukkan ke Isro' Mi'raj</button>
+        </span>
+      </div>
+      <div id="phbiSummary" class="phbi-summary hidden">
+        <div><span id="phbiSumIncomeLabel">Pemasukan</span><b id="phbiSumIncome" class="in">Rp 0</b></div>
+        <div><span id="phbiSumExpenseLabel">Pengeluaran</span><b id="phbiSumExpense" class="out">Rp 0</b></div>
+        <div><span id="phbiSumBalanceLabel">Saldo</span><b id="phbiSumBalance">Rp 0</b></div>
       </div>
 
       <div class="filters"><label class="hidden">Kas<select id="fundFilter" disabled><option value="all">Semua kas</option><option value="DKM">Kas DKM</option><option value="PEMBANGUNAN">Kas Pembangunan</option><option value="PHBI">Kas PHBI</option></select></label>
@@ -419,7 +434,7 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=al-ikhlas-premium-2"></script>
+  <script src="app.js?v=al-ikhlas-premium-3"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       if (window.lucide) window.lucide.createIcons();

@@ -978,10 +978,22 @@ input,select,textarea{border-radius:10px}.table-wrap{border-radius:13px}.toast{b
 
 
 /* Sub menu kegiatan PHBI (Maulid Nabi / Isro' Mi'raj) */
-.phbi-submenu { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--green-100); }
-.phbi-submenu.hidden { display: none; }
-.phbi-submenu-label { margin-right: 4px; color: var(--green-900); font-size: 12px; font-weight: 700; }
-.phbi-tab { min-height: 36px; padding: 7px 16px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--green-900); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
-.phbi-tab:hover { background: #f3faf6; }
-.phbi-tab[aria-pressed="true"] { border-color: var(--green-900); background: var(--green-900); color: #fff; }
-.phbi-tab:focus-visible { outline: 2px solid var(--green-700); outline-offset: 2px; }
+.section-nav .phbi-sub-links { display: flex; flex-direction: column; gap: 4px; margin: 0 0 4px 16px; padding-left: 10px; border-left: 2px solid #cfe3d6; }
+.section-nav .phbi-sub-links a { min-height: 40px; padding: 8px 12px; font-size: 12px; }
+.section-nav a.is-parent { background: #e9f4ee; color: #1a4d36; }
+.phbi-tabs { display: none; gap: 8px; margin: 0 0 14px; padding: 5px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.phbi-tabs a { flex: 1; padding: 10px 8px; border-radius: 8px; text-align: center; text-decoration: none; font-weight: 700; font-size: 13px; color: var(--green-900); }
+.phbi-tabs a[aria-current="page"] { background: var(--green-900); color: #fff; }
+@media (max-width: 900px) {
+  .section-nav .phbi-sub-links { display: none !important; }
+  .phbi-tabs:not(.hidden) { display: flex; }
+}
+.phbi-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0 0 14px; }
+.phbi-summary div { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+.phbi-summary span { display: block; margin-bottom: 2px; color: var(--muted); font-size: 12px; }
+.phbi-summary b { font-size: 15px; }
+.phbi-summary b.in { color: #1b6b45; }
+.phbi-summary b.out { color: #b3361f; }
+@media (max-width: 760px) { .phbi-summary { grid-template-columns: 1fr; } }
+.phbi-notice { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 0 0 14px; padding: 10px 12px; border: 1px solid #e6d3a1; border-radius: 10px; background: #fff8e6; font-size: 12px; }
+.phbi-notice-actions { display: flex; gap: 8px; flex-wrap: wrap; }
