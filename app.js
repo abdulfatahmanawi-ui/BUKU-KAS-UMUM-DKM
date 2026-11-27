@@ -37,6 +37,9 @@
     if (unique.length <= 3) return unique.map((v, i) => fmt(v, i === unique.length - 1)).join(unique.length === 2 ? " & " : ", ").replace(/, ([^,]+)$/, " & $1");
     return fmt(unique[0], true) + " s.d. " + fmt(unique[unique.length - 1], true);
   }
+  // Khusus Kas PHBI (Maulid Nabi / Isro' Mi'raj) periode mengikuti tanggal kegiatan;
+  // kas lain tetap memakai tanggal transaksi. Transaksi lama tanpa tanggal kegiatan memakai tanggal transaksi.
+  const periodDate = (item) => item.fund === "PHBI" && item.phbi_event_date ? item.phbi_event_date : item.transaction_date;
   const fundLabel = (fund) => fund === "PHBI" ? "Kas PHBI - " + phbiEventNames[activePhbiEvent] : (fundNames[fund] || "Kas");
   let activePhbiEvent = "MAULID_NABI";
   let phbiEventReady = false;
@@ -716,7 +719,11 @@
   function populateMonthFilter() {
     const select = $("monthFilter");
     const current = select.value || "all";
-    const months = [...new Set(transactions.map((item) => String(item.transaction_date || "").slice(0, 7)).filter(Boolean))].sort().reverse();
+    const onPhbi = $("fundFilter").value === "PHBI";
+    const source = onPhbi ? transactions.filter((item) => item.fund === "PHBI" && (!phbiEventReady || item.phbi_event === activePhbiEvent)) : transactions;
+    const dateOf = onPhbi ? periodDate : (item) => item.transaction_date;
+    $("monthFilterLabel").textContent = onPhbi ? "Periode (tanggal kegiatan)" : "Periode";
+    const months = [...new Set(source.map((item) => String(dateOf(item) || "").slice(0, 7)).filter(Boolean))].sort().reverse();
     const years = [...new Set(months.map((month) => month.slice(0, 4)))];
     const monthOptions = months.map((month) => {
       const [year, number] = month.split("-");
@@ -725,9 +732,13 @@
       return `<option value="${month}">${escapeHtml(label)}</option>`;
     }).join("");
     const yearOptions = years.map((year) => `<option value="${year}">Tahun ${year}</option>`).join("");
-    select.innerHTML = `<option value="all">Semua periode</option>` +
+    const optionsHtml = `<option value="all">Semua periode</option>` +
       (years.length ? `<optgroup label="Tahunan">${yearOptions}</optgroup>` : "") +
       (months.length ? `<optgroup label="Bulanan">${monthOptions}</optgroup>` : "");
+    if (select.dataset.sig !== optionsHtml) {
+      select.innerHTML = optionsHtml;
+      select.dataset.sig = optionsHtml;
+    }
     select.value = months.includes(current) || years.includes(current) || current === "all" ? current : "all";
   }
 
@@ -738,7 +749,7 @@
     const search = $("searchInput").value.trim().toLowerCase();
 
     return transactions.filter((item) => {
-      const monthMatch = month === "all" || String(item.transaction_date).startsWith(month);
+      const monthMatch = month === "all" || String(fund === "PHBI" ? periodDate(item) : item.transaction_date).startsWith(month);
       const typeMatch = type === "all" || item.type === type;
       const searchMatch = !search ||
         String(item.description || "").toLowerCase().includes(search) ||
@@ -766,6 +777,7 @@
 
   function renderTable() {
     updatePhbiControls();
+    populateMonthFilter();
     const items = getFilteredTransactions();
     const summary = calculate(items);
     const colspan = isAdmin ? 6 : 5;
@@ -1330,8 +1342,9 @@
     const monthEndDay = isYearly ? 31 : new Date(year, month, 0).getDate();
     const monthEnd = isYearly ? `${year}-12-31` : `${monthValue}-${String(monthEndDay).padStart(2, "0")}`;
     const fundItems = transactions.filter((item) => item.fund === fund && (fund !== "PHBI" || item.phbi_event === activePhbiEvent));
+    const reportDate = (item) => fund === "PHBI" ? periodDate(item) : item.transaction_date;
     const monthItems = fundItems.filter((item) => {
-      const date = String(item.transaction_date || "");
+      const date = String(reportDate(item) || "");
       return date >= monthStart && date <= monthEnd;
     }).sort((a, b) => {
       const dateOrder = String(a.transaction_date || "").localeCompare(String(b.transaction_date || ""));
@@ -1447,7 +1460,8 @@
     // Saldo awal hanya memakai transaksi kas yang dipilih sebelum bulan laporan.
     // Filter jenis dan pencarian di halaman tidak mengurangi isi laporan bulanan maupun tahunan.
     const openingBalance = fundItems.reduce((balance, item) => {
-      if (!item.transaction_date || item.transaction_date >= monthStart) return balance;
+      const date = reportDate(item);
+      if (!date || date >= monthStart) return balance;
       const amount = Number(item.amount || 0);
       if (item.type === "MASUK") return balance + amount;
       if (item.type === "KELUAR") return balance - amount;
