@@ -1041,3 +1041,9 @@ input,select,textarea{border-radius:10px}.table-wrap{border-radius:13px}.toast{b
   .section-nav a span { font-size: 7px; line-height: 1.15; overflow-wrap: normal; word-break: normal; }
   .section-nav a i { width: 18px; height: 18px; flex-basis: 18px; }
 }
+
+.upz-year-panel { padding: 10px 14px; }
+.upz-year-panel .help-text { margin: 0; }
+.upz-year-panel a { color: var(--green-900); font-weight: 700; }
+#upz-pendistribusian .list-heading, #upz-pendistribusian .report-actions { }
+@media(max-width:640px){ #upz-pendistribusian .list-heading, #upz-pendistribusian .report-actions { flex-direction: column; align-items: stretch; } #upz-pendistribusian .report-actions .btn, #upz-pendistribusian .print-date-field input { width: 100%; } }

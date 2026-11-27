@@ -8,7 +8,7 @@
   <title>Kas DKM | Masjid Jami Al-Ikhlas</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="style.css?v=upz-20261127b">
+  <link rel="stylesheet" href="style.css?v=upz-20261127c">
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -49,6 +49,7 @@
       <a href="#upz-perhimpunan" data-upz="1"><i data-lucide="hand-coins" aria-hidden="true"></i><span>UPZ</span></a>
       <div id="upzSubLinks" class="phbi-sub-links hidden" aria-label="Menu UPZ">
         <a href="#upz-perhimpunan"><span>Perhimpunan</span></a>
+        <a href="#upz-pendistribusian"><span>Pendistribusian</span></a>
       </div>
     </nav>
     <div class="main-content">
@@ -58,6 +59,7 @@
     </nav>
     <nav id="upzTabs" class="phbi-tabs hidden" aria-label="Menu UPZ">
       <a href="#upz-perhimpunan">Perhimpunan</a>
+      <a href="#upz-pendistribusian">Pendistribusian</a>
     </nav>
     <div id="dashboard" data-page>
     <section class="intro-row">
@@ -193,6 +195,7 @@
     <nav class="profile-subnav" id="profileSubnav" aria-label="Submenu profil">
       <button type="button" class="profile-tab is-active" data-profile-tab="profil-masjid"><i data-lucide="building-2"></i> Profil Masjid</button>
       <button type="button" class="profile-tab" data-profile-tab="profil-pengurus"><i data-lucide="users"></i> Susunan Pengurus</button>
+      <button type="button" class="profile-tab" data-profile-tab="profil-kop-upz"><i data-lucide="file-text"></i> Data Kop UPZ</button>
       <button type="button" class="profile-tab" data-profile-tab="profil-kategori"><i data-lucide="tags"></i> Kelola Kategori Transaksi</button>
     </nav>
     <section id="profilePanel" data-profile-section="profil-masjid" class="panel admin-panel hidden">
@@ -246,6 +249,21 @@
         <div class="form-actions"><button id="saveOfficersBtn" class="btn btn-primary" type="submit">Simpan Susunan Pengurus</button><span id="officersMessage" class="form-message" role="status"></span></div>
       </form>
     </section>
+          <section data-profile-section="profil-kop-upz" class="panel admin-panel hidden">
+        <div class="section-heading"><div><p class="eyebrow green">IDENTITAS FORM A DAN FORM B</p><h3>Data Kop UPZ</h3></div><span class="private-note">Khusus administrator</span></div>
+        <p class="help-text">Diisi sekali di sini. Dipakai otomatis pada kop Form A (UPZ &rsaquo; Perhimpunan) dan Form B (UPZ &rsaquo; Pendistribusian).</p>
+        <form id="upzSettingsForm" class="upz-settings-grid">
+          <label>Tahun Hijriah<input id="upzTahunH" type="number" min="1400" max="1600" required></label>
+          <label>Tahun Masehi<input id="upzTahunM" type="number" min="2000" max="2200" required></label>
+          <label>Nama DKM/RW<input id="upzDkm" type="text" maxlength="120"></label>
+          <label>Desa/Kelurahan<input id="upzDesa" type="text" maxlength="120"></label>
+          <label>Kecamatan<input id="upzKecamatan" type="text" maxlength="120"></label>
+          <label>Nama Ketua UPZ<input id="upzKetua" type="text" maxlength="120"></label>
+          <label>Nama Ketua RW 004<input id="upzKetuaRw" type="text" maxlength="120"></label>
+          <label>Nomor HP<input id="upzHp" type="tel" maxlength="40"></label>
+          <div class="form-actions"><button id="upzSaveSettingsBtn" class="btn btn-primary" type="submit">Simpan Data Kop</button><span id="upzSettingsMsg" class="form-message" role="status"></span></div>
+        </form>
+      </section>
           <section data-profile-section="profil-kategori" class="panel admin-panel hidden category-manager" aria-labelledby="categoryManagerTitle">
         <div class="section-heading">
           <div><p class="eyebrow green">PENGATURAN KATEGORI</p><h3 id="categoryManagerTitle">Kelola Kategori Transaksi</h3></div>
@@ -283,21 +301,7 @@
       <p class="help-text">Data perhimpunan UPZ memuat nama warga (muzaki), sehingga hanya dapat dilihat dan dikelola oleh pengurus. Silakan login sebagai administrator.</p>
     </section>
     <div id="upzAdmin" class="hidden">
-      <section class="panel admin-panel">
-        <div class="section-heading"><div><p class="eyebrow green">IDENTITAS FORM</p><h3>Data Kop Form A</h3></div><span class="private-note">Khusus administrator</span></div>
-        <form id="upzSettingsForm" class="upz-settings-grid">
-          <label>Tahun Hijriah<input id="upzTahunH" type="number" min="1400" max="1600" required></label>
-          <label>Tahun Masehi<input id="upzTahunM" type="number" min="2000" max="2200" required></label>
-          <label>Nama DKM/RW<input id="upzDkm" type="text" maxlength="120"></label>
-          <label>Desa/Kelurahan<input id="upzDesa" type="text" maxlength="120"></label>
-          <label>Kecamatan<input id="upzKecamatan" type="text" maxlength="120"></label>
-          <label>Nama Ketua UPZ<input id="upzKetua" type="text" maxlength="120"></label>
-          <label>Nama Ketua RW 004<input id="upzKetuaRw" type="text" maxlength="120"></label>
-          <label>Nomor HP<input id="upzHp" type="tel" maxlength="40"></label>
-          <div class="form-actions"><button id="upzSaveSettingsBtn" class="btn btn-primary" type="submit">Simpan Data Kop</button><span id="upzSettingsMsg" class="form-message" role="status"></span></div>
-        </form>
-      </section>
-
+      <section class="panel upz-year-panel"><p class="help-text"><b id="upzYearNote"></b><br>Tahun dan data kop diatur di <a href="#profil">Profil &rsaquo; Data Kop UPZ</a>.</p></section>
       <section class="panel admin-panel">
         <div class="section-heading"><div><p class="eyebrow green">INPUT DATA</p><h3 id="upzFormTitle">Tambah Muzaki</h3></div></div>
         <form id="upzForm" class="upz-form">
@@ -340,6 +344,64 @@
         </div>
         <div class="filters upz-filters"><label class="search-field">Cari muzaki<input id="upzSearch" type="search" placeholder="Cari nama atau alamat..."></label></div>
         <div id="upzList" class="upz-list"><p class="empty-state">Memuat data...</p></div>
+      </section>
+    </div>
+    </div>
+    <div id="upz-pendistribusian" data-page hidden>
+    <section class="intro-row">
+      <div>
+        <p class="eyebrow green">UNIT PENGUMPUL ZAKAT</p>
+        <h2>Pendistribusian Zakat, Infak dan Fidyah</h2>
+        <p class="muted">Data mustahik dan dhuafa penerima: zakat fitrah (uang dan beras), BIS Ramadhan, zakat mal, infak umum dan fidyah. Dicetak dalam format Form B DKM/RT/RW BAZNAS.</p>
+      </div>
+    </section>
+    <section id="distGuest" class="panel">
+      <p class="help-text">Data pendistribusian UPZ memuat nama warga penerima (mustahik), sehingga hanya dapat dilihat dan dikelola oleh pengurus. Silakan login sebagai administrator.</p>
+    </section>
+    <div id="distAdmin" class="hidden">
+      <section class="panel upz-year-panel"><p class="help-text"><b id="distYearNote"></b><br>Tahun dan data kop diatur di <a href="#profil">Profil &rsaquo; Data Kop UPZ</a>.</p></section>
+      <section class="panel admin-panel">
+        <div class="section-heading"><div><p class="eyebrow green">INPUT DATA</p><h3 id="distFormTitle">Tambah Mustahik / Dhuafa</h3></div></div>
+        <form id="distForm" class="upz-form">
+          <input type="hidden" id="distId">
+          <label class="upz-wide">Nama Mustahik dan Dhuafa (Kepala Keluarga)<input id="distNama" type="text" maxlength="160" required></label>
+          <label class="upz-wide">Kp/Dsn/Blok<input id="distAlamat" type="text" maxlength="160"></label>
+          <label>RT<input id="distRt" type="text" maxlength="10" inputmode="numeric"></label>
+          <label>RW<input id="distRw" type="text" maxlength="10" inputmode="numeric"></label>
+          <label>Jumlah Jiwa (orang)<input id="distJiwa" type="number" min="0" step="1" value="0"></label>
+          <label>Zakat Fitrah - Uang (Rp)<input id="distFitrahUang" type="number" min="0" step="1" value="0"></label>
+          <label>Zakat Fitrah - Beras (kg)<input id="distFitrahBeras" type="number" min="0" step="0.1" value="0"></label>
+          <label>BIS Ramadhan (Rp)<input id="distBis" type="number" min="0" step="1" value="0"></label>
+          <label>Zakat Mal (Rp)<input id="distMal" type="number" min="0" step="1" value="0"></label>
+          <label>Infak Umum (Rp)<input id="distInfak" type="number" min="0" step="1" value="0"></label>
+          <label>Fidyah (Rp)<input id="distFidyah" type="number" min="0" step="1" value="0"></label>
+          <label>Jumlah (Rp)<input id="distJumlah" type="text" readonly></label>
+          <div class="form-actions upz-wide">
+            <button id="distSaveBtn" class="btn btn-primary" type="submit">Simpan</button>
+            <button id="distCancelBtn" class="btn btn-muted hidden" type="button">Batal Edit</button>
+            <span id="distMsg" class="form-message" role="status"></span>
+          </div>
+        </form>
+        <p class="help-text">Jumlah (Rp) = zakat fitrah uang + BIS Ramadhan + zakat mal + infak umum + fidyah. Beras dihitung terpisah dalam kilogram.</p>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading list-heading">
+          <div><p class="eyebrow green">DAFTAR MUSTAHIK</p><h3 id="distListTitle">Pendistribusian Tahun</h3></div>
+          <div class="report-actions">
+            <label class="print-date-field" for="distTglLaporan">Tanggal laporan<input id="distTglLaporan" type="date"></label>
+            <button id="distPrintBtn" class="btn btn-primary" type="button">Cetak Form B (PDF)</button>
+            <button id="distPrintBlankBtn" class="btn btn-outline" type="button">Form Kosong</button>
+          </div>
+        </div>
+        <div class="phbi-summary upz-summary">
+          <div><span>Jumlah Penerima</span><b id="distSumMuzaki">0</b></div>
+          <div><span>Jumlah Jiwa</span><b id="distSumJiwa">0</b></div>
+          <div><span>Beras (kg)</span><b id="distSumBeras">0</b></div>
+          <div><span>Total Uang</span><b id="distSumTotal" class="in">Rp 0</b></div>
+        </div>
+        <div class="filters upz-filters"><label class="search-field">Cari mustahik<input id="distSearch" type="search" placeholder="Cari nama atau alamat..."></label></div>
+        <div id="distList" class="upz-list"><p class="empty-state">Memuat data...</p></div>
       </section>
     </div>
     </div>
@@ -513,8 +575,8 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=upz-20261127b"></script>
-  <script src="upz.js?v=upz-20261127b"></script>
+  <script src="app.js?v=upz-20261127c"></script>
+  <script src="upz.js?v=upz-20261127c"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       if (window.lucide) window.lucide.createIcons();

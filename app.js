@@ -1915,7 +1915,7 @@
     const fundRoutes = { "kas-dkm": "DKM", "kas-pembangunan": "PEMBANGUNAN", "kas-phbi-maulid": "PHBI", "kas-phbi-isro": "PHBI" };
     const activeFund = fundRoutes[requested];
     const selected = activeFund ? "transaksi" :
-      (["dashboard", "jadwal-sholat", "profil", "upz-perhimpunan"].includes(requested) ? requested : "dashboard");
+      (["dashboard", "jadwal-sholat", "profil", "upz-perhimpunan", "upz-pendistribusian"].includes(requested) ? requested : "dashboard");
 
     if (activeFund) {
       const label = fundLabel(activeFund);
@@ -1928,7 +1928,7 @@
       renderTable();
     }
     updatePhbiControls();
-    ["upzTabs", "upzSubLinks"].forEach((id) => $(id).classList.toggle("hidden", requested !== "upz-perhimpunan"));
+    ["upzTabs", "upzSubLinks"].forEach((id) => $(id).classList.toggle("hidden", !requested.startsWith("upz-")));
 
     document.querySelectorAll("[data-page]").forEach((page) => {
       page.hidden = page.id !== selected;
@@ -1943,7 +1943,7 @@
       else link.removeAttribute("aria-current");
       if (link.dataset.kas === "PHBI") link.classList.toggle("is-parent", requested.startsWith("kas-phbi"));
       if (link.dataset.upz) {
-        link.classList.toggle("is-parent", requested === "upz-perhimpunan");
+        link.classList.toggle("is-parent", requested.startsWith("upz-"));
         link.removeAttribute("aria-current");
       }
     });
