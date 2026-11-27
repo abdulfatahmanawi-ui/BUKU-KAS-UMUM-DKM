@@ -1171,3 +1171,4 @@ input,select,textarea{border-radius:10px}.table-wrap{border-radius:13px}.toast{b
 .upz-page .upz-head{align-items:stretch}
 }
 @media(max-width:380px){.upz-page .report-actions,.upz-page .upz-lap-actions{grid-template-columns:1fr}}
+.upz-page [hidden]{display:none!important}
