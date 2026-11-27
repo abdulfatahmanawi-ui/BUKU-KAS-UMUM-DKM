@@ -8,7 +8,7 @@
   <title>Kas DKM | Masjid Jami Al-Ikhlas</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="style.css?v=upz-20261127l">
+  <link rel="stylesheet" href="style.css?v=upz-20261127m">
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -427,6 +427,11 @@
           Tanggal transaksi
           <input id="transactionDate" type="date" required>
         </label>
+        <label id="transactionEventDateField" class="hidden">
+          Tanggal kegiatan
+          <input id="transactionEventDate" type="date">
+          <small class="field-hint">Tanggal pelaksanaan kegiatan; tampil pada laporan saat dicetak.</small>
+        </label>
         <label>
           Jenis transaksi
           <select id="transactionType" required>
@@ -479,10 +484,6 @@
           <label class="print-date-field" for="reportPrintDate">
             Tanggal cetak laporan
             <input id="reportPrintDate" type="date" required>
-          </label>
-          <label id="phbiEventDateField" class="print-date-field hidden" for="phbiEventDate">
-            Tanggal kegiatan
-            <input id="phbiEventDate" type="date">
           </label>
           <label class="print-date-field" for="reportFormat">
             Format laporan
@@ -584,7 +585,7 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=upz-20261127l"></script>
+  <script src="app.js?v=upz-20261127m"></script>
   <script src="upz.js?v=upz-20261127l"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {

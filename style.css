@@ -1199,3 +1199,7 @@ input,select,textarea{border-radius:10px}.table-wrap{border-radius:13px}.toast{b
 @media(min-width:901px){#upz-laporan .upz-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
 /* Pilihan format laporan kas */
 .print-date-field select{width:100%;min-height:40px;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font:inherit;font-size:12px}
+
+/* Tanggal kegiatan PHBI */
+.field-hint { display: block; margin-top: 4px; font-size: 12px; font-weight: 400; color: #6b7280; }
+.event-date-tag { display: block; margin-top: 2px; font-size: 12px; color: #0f766e; }

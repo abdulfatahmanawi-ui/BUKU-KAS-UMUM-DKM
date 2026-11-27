@@ -23,9 +23,24 @@
   // Kegiatan PHBI yang dapat dipilih untuk judul laporan (transaksi tetap satu Kas PHBI).
   const phbiEventNames = { MAULID_NABI: "Maulid Nabi", ISRO_MIRAJ: "Isro' Mi'raj" };
   const phbiRoutes = { "kas-phbi-maulid": "MAULID_NABI", "kas-phbi-isro": "ISRO_MIRAJ" };
+  // Tanggal kegiatan PHBI yang tampil di judul laporan (1 tanggal, beberapa tanggal, atau rentang).
+  function formatEventDates(dates) {
+    const unique = [...new Set(dates.filter(Boolean))].sort();
+    if (!unique.length) return "";
+    const fmt = (value, withYear) => {
+      const [y, m, d] = value.split("-").map(Number);
+      return new Intl.DateTimeFormat("id-ID", {
+        day: "numeric", month: "long", ...(withYear ? { year: "numeric" } : {}), timeZone: "UTC"
+      }).format(new Date(Date.UTC(y, m - 1, d)));
+    };
+    if (unique.length === 1) return fmt(unique[0], true);
+    if (unique.length <= 3) return unique.map((v, i) => fmt(v, i === unique.length - 1)).join(unique.length === 2 ? " & " : ", ").replace(/, ([^,]+)$/, " & $1");
+    return fmt(unique[0], true) + " s.d. " + fmt(unique[unique.length - 1], true);
+  }
   const fundLabel = (fund) => fund === "PHBI" ? "Kas PHBI - " + phbiEventNames[activePhbiEvent] : (fundNames[fund] || "Kas");
   let activePhbiEvent = "MAULID_NABI";
   let phbiEventReady = false;
+  let phbiEventDateReady = false;
   const defaultCategories = {
     MASUK: ["Infak", "Sedekah", "Donasi Jamaah", "Wakaf", "Sumbangan", "Lainnya"],
     KELUAR: ["Operasional", "Listrik dan Air", "Kebersihan", "Pembangunan", "Kegiatan Masjid", "Perlengkapan", "Lainnya"]
@@ -642,7 +657,9 @@
       }
     };
     const isMissingColumn = (err) => ["42703", "PGRST204"].includes(err?.code);
-    let result = await query(columns + ", fund, phbi_event");
+    let result = await query(columns + ", fund, phbi_event, phbi_event_date");
+    phbiEventDateReady = !result.error;
+    if (result.error && isMissingColumn(result.error)) result = await query(columns + ", fund, phbi_event");
     phbiEventReady = !result.error;
     if (result.error && isMissingColumn(result.error)) result = await query(columns + ", fund");
     const missingFund = isMissingColumn(result.error);
@@ -686,6 +703,7 @@
       // Normalisasi skema Supabase yang sudah ada ke format internal aplikasi.
       fund: row.fund || "DKM",
       phbi_event: row.phbi_event || null,
+      phbi_event_date: row.phbi_event_date || null,
       transaction_date: row.date,
       type: kindToType(row.kind)
     }));
@@ -779,7 +797,7 @@
       return `<tr>
         <td>${escapeHtml(formatDate(item.transaction_date))}</td>
         <td>${escapeHtml(item.category)}</td>
-        <td>${escapeHtml(item.description)}</td>
+        <td>${escapeHtml(item.description)}${item.fund === "PHBI" && item.phbi_event_date ? `<small class="event-date-tag">Kegiatan: ${escapeHtml(formatDate(item.phbi_event_date))}</small>` : ""}</td>
         <td><span class="type-tag ${incoming ? "tag-in" : "tag-out"}">${typeLabel}</span></td>
         <td class="number ${incoming ? "amount-in" : "amount-out"}">${incoming ? "+" : "−"} ${escapeHtml(rupiah(item.amount))}</td>
         ${action}
@@ -840,10 +858,19 @@
     renderDashboardInsights();
   }
 
+  // Kolom Tanggal kegiatan hanya muncul (dan wajib) pada form Kas PHBI.
+  function updateEventDateField() {
+    const onPhbi = $("transactionFund").value === "PHBI";
+    $("transactionEventDateField").classList.toggle("hidden", !onPhbi);
+    $("transactionEventDate").required = onPhbi;
+  }
+
   function resetTransactionForm() {
     $("transactionForm").reset();
     $("transactionId").value = "";
     $("transactionDate").value = new Date().toISOString().slice(0, 10);
+    $("transactionEventDate").value = getJakartaDateInputValue();
+    updateEventDateField();
     $("transactionType").value = "MASUK";
     renderCategoryOptions();
     $("transactionPartyName").value = "";
@@ -859,6 +886,7 @@
     const fund = Object.keys(fundNames).find((key) => key === $("fundFilter").value) || "DKM";
     resetTransactionForm();
     $("transactionFund").value = fund;
+    updateEventDateField();
     $("transactionType").value = type;
     renderCategoryOptions();
     updatePartyNameLabel();
@@ -877,6 +905,8 @@
     renderCategoryOptions(item.category);
     $("transactionCategory").value = item.category;
     $("transactionFund").value = item.fund;
+    $("transactionEventDate").value = item.phbi_event_date || getJakartaDateInputValue();
+    updateEventDateField();
     $("transactionAmount").value = item.amount;
     $("transactionDescription").value = item.description;
     $("transactionPartyName").value = item.party_name || "";
@@ -908,6 +938,16 @@
       }
       // Kegiatan mengikuti sub menu yang sedang dibuka (Maulid Nabi / Isro' Mi'raj).
       payload.phbi_event = activePhbiEvent;
+      if (!phbiEventDateReady) {
+        setFormMessage("Jalankan supabase-migration-phbi-tanggal-kegiatan.sql di Supabase agar tanggal kegiatan dapat disimpan.");
+        return;
+      }
+      payload.phbi_event_date = $("transactionEventDate").value;
+      if (!payload.phbi_event_date) {
+        setFormMessage("Pilih tanggal kegiatan terlebih dahulu.");
+        $("transactionEventDate").focus();
+        return;
+      }
     }
     const partyName = $("transactionPartyName").value.trim();
 
@@ -1219,7 +1259,6 @@
     const onPhbi = $("fundFilter").value === "PHBI" && /^kas-phbi/.test(window.location.hash.slice(1));
     const name = phbiEventNames[activePhbiEvent];
     ["phbiTabs", "phbiSubLinks"].forEach((id) => $(id).classList.toggle("hidden", !onPhbi));
-    $("phbiEventDateField").classList.toggle("hidden", !onPhbi);
     $("phbiSummary").classList.toggle("hidden", !onPhbi || !phbiEventReady);
     if (onPhbi && phbiEventReady) {
       const totals = calculate(transactions.filter((item) => item.fund === "PHBI" && item.phbi_event === activePhbiEvent));
@@ -1264,17 +1303,6 @@
         showToast("Jalankan supabase-migration-phbi-kegiatan.sql di Supabase terlebih dahulu.");
         return;
       }
-      const eventDateValue = $("phbiEventDate").value;
-      if (!eventDateValue) {
-        showToast("Pilih tanggal kegiatan PHBI terlebih dahulu.");
-        $("phbiEventDate").focus();
-        return;
-      }
-      const [evYear, evMonth, evDay] = eventDateValue.split("-").map(Number);
-      const eventDateText = new Intl.DateTimeFormat("id-ID", {
-        day: "numeric", month: "long", year: "numeric", timeZone: "UTC"
-      }).format(new Date(Date.UTC(evYear, evMonth - 1, evDay)));
-      phbiEventLine = `${phbiEventNames[activePhbiEvent]} - ${eventDateText}`.toUpperCase();
     }
     const monthValue = $("monthFilter").value;
     if (monthValue === "all") {
@@ -1310,6 +1338,20 @@
       if (dateOrder !== 0) return dateOrder;
       return String(a.created_at || "").localeCompare(String(b.created_at || ""));
     });
+
+    // Kas PHBI: judul laporan memuat kegiatan beserta tanggal kegiatan yang dipilih pada transaksi.
+    const eventDates = [...new Set(monthItems.map((item) => item.phbi_event_date).filter(Boolean))].sort();
+    if (fund === "PHBI") {
+      const eventDateText = formatEventDates(eventDates);
+      phbiEventLine = (phbiEventNames[activePhbiEvent] + (eventDateText ? " - " + eventDateText : "")).toUpperCase();
+    }
+    // Bila ada lebih dari satu tanggal kegiatan, setiap baris diberi keterangan tanggalnya.
+    const detailText = (item) => {
+      const base = item.description || "";
+      return fund === "PHBI" && eventDates.length > 1 && item.phbi_event_date
+        ? base + " (Kegiatan: " + formatNumericDate(item.phbi_event_date) + ")"
+        : base;
+    };
 
     if (typeof window.jspdf.jsPDF !== "function") {
       showToast("Library PDF belum siap. Silakan muat ulang aplikasi.");
@@ -1438,7 +1480,7 @@
         rows.length + 1,
         formatNumericDate(item.transaction_date),
         item.category || "",
-        item.description || "",
+        detailText(item),
         item.type === "MASUK" ? rupiah(amount) : "",
         item.type === "KELUAR" ? rupiah(amount) : "",
         rupiah(runningBalance)
@@ -1482,7 +1524,7 @@
       const tableMargin = { left: margin, right: margin, top: 12, bottom: 18 };
       const toRows = (type) => monthItems
         .filter((item) => item.type === type)
-        .map((item, index) => [index + 1, formatNumericDate(item.transaction_date), item.category || "", item.description || "", rupiah(Number(item.amount || 0))]);
+        .map((item, index) => [index + 1, formatNumericDate(item.transaction_date), item.category || "", detailText(item), rupiah(Number(item.amount || 0))]);
       const sectionTitle = (text, y) => {
         doc.setTextColor(0, 0, 0);
         doc.setFont("helvetica", "bold");
@@ -2130,7 +2172,7 @@
     $("currentYear").textContent = new Date().getFullYear();
     $("transactionDate").value = getJakartaDateInputValue();
     $("reportPrintDate").value = getJakartaDateInputValue();
-    $("phbiEventDate").value = getJakartaDateInputValue();
+    $("transactionEventDate").value = getJakartaDateInputValue();
     updatePartyNameLabel();
     bindEvents();
     renderPage();
