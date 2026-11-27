@@ -317,7 +317,7 @@
       const t = sums(data);
       foot.push([
         { content: "JUMLAH", colSpan: 5, styles: { halign: "center", fontStyle: "bold" } },
-        nf.format(t.jiwa), nf.format(t.fitrah), nf1.format(t.beras), nf.format(t.bis),
+        { content: nf.format(t.jiwa), styles: { halign: "center" } }, nf.format(t.fitrah), nf1.format(t.beras), nf.format(t.bis),
         nf.format(t.mal), nf.format(t.infak), nf.format(t.fidyah), nf.format(t.jumlah)
       ]);
     }
@@ -379,16 +379,15 @@
     // Titimangsa dan tanda tangan
     const pageH = doc.internal.pageSize.getHeight();
     let y = (doc.lastAutoTable?.finalY || 80) + 10;
-    if (y + 54 > pageH - 8) { doc.addPage(); y = 20; }
+    if (y + 40 > pageH - 8) { doc.addPage(); y = 20; }
     const sx = W - M - 60;       // blok kanan: Ketua UPZ
     const lx = M + 20;           // blok kiri: Ketua RW
     doc.setFont("helvetica", "normal"); doc.setFontSize(10);
-    doc.text(`${s.desa || "........."}, ${longDate($("upzTglLaporan").value)}`, W / 2, y, { align: "center" });
-    y += 7;
-    doc.text("Mengetahui,", lx + 30, y + 6, { align: "center" });
-    doc.text("Ketua RW 004", lx + 30, y + 11, { align: "center" });
-    doc.text("Ketua UPZ", sx + 30, y + 11, { align: "center" });
-    const ny = y + 36;
+    doc.text(`${s.desa || "........."}, ${longDate($("upzTglLaporan").value)}`, sx + 30, y, { align: "center" });
+    doc.text("Mengetahui,", lx + 30, y, { align: "center" });
+    doc.text("Ketua RW 004", lx + 30, y + 5, { align: "center" });
+    doc.text("Ketua UPZ", sx + 30, y + 5, { align: "center" });
+    const ny = y + 30;
     doc.setFont("helvetica", "bold");
     const rwName = blank ? "" : (s.ketua_rw || "");
     const upzName = blank ? "" : (s.ketua_upz || "");
