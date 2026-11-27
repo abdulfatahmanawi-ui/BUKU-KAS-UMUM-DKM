@@ -20,6 +20,9 @@
     PEMBANGUNAN: "PANITIA PEMBANGUNAN MASJID",
     PHBI: "PANITIA PERINGATAN HARI BESAR ISLAM"
   };
+  // Kegiatan PHBI yang dapat dipilih untuk judul laporan (transaksi tetap satu Kas PHBI).
+  const phbiEventNames = { MAULID_NABI: "Maulid Nabi", ISRO_MIRAJ: "Isro' Mi'raj" };
+  let selectedPhbiEvent = "";
   const defaultCategories = {
     MASUK: ["Infak", "Sedekah", "Donasi Jamaah", "Wakaf", "Sumbangan", "Lainnya"],
     KELUAR: ["Operasional", "Listrik dan Air", "Kebersihan", "Pembangunan", "Kegiatan Masjid", "Perlengkapan", "Lainnya"]
@@ -1194,6 +1197,15 @@
       const safeName = String(mosqueProfile.name || "Masjid").replace(/[^a-z0-9-]/gi, "_");
       doc.save(`Kwitansi_${incoming ? "Pemasukan" : "Pengeluaran"}_${safeName}_${receiptDate}.pdf`);
     }
+  function updatePhbiControls() {
+    const isPhbi = $("fundFilter").value === "PHBI";
+    $("phbiSubmenu").classList.toggle("hidden", !isPhbi);
+    $("phbiEventDateField").classList.toggle("hidden", !isPhbi);
+    document.querySelectorAll("[data-phbi-event]").forEach((button) => {
+      button.setAttribute("aria-pressed", String(button.dataset.phbiEvent === selectedPhbiEvent));
+    });
+  }
+
   async function exportPdf() {
     const fund = $("fundFilter").value;
     if (!Object.hasOwn(fundNames, fund)) {
@@ -1206,6 +1218,25 @@
       return;
     }
     const fundName = fundNames[fund];
+    let phbiEventLine = "";
+    if (fund === "PHBI") {
+      if (!phbiEventNames[selectedPhbiEvent]) {
+        showToast("Pilih kegiatan PHBI (Maulid Nabi atau Isro' Mi'raj) terlebih dahulu.");
+        $("phbiSubmenu").scrollIntoView({ block: "center" });
+        return;
+      }
+      const eventDateValue = $("phbiEventDate").value;
+      if (!eventDateValue) {
+        showToast("Pilih tanggal kegiatan PHBI terlebih dahulu.");
+        $("phbiEventDate").focus();
+        return;
+      }
+      const [evYear, evMonth, evDay] = eventDateValue.split("-").map(Number);
+      const eventDateText = new Intl.DateTimeFormat("id-ID", {
+        day: "numeric", month: "long", year: "numeric", timeZone: "UTC"
+      }).format(new Date(Date.UTC(evYear, evMonth - 1, evDay)));
+      phbiEventLine = `${phbiEventNames[selectedPhbiEvent]} - ${eventDateText}`.toUpperCase();
+    }
     const monthValue = $("monthFilter").value;
     if (monthValue === "all") {
       showToast("Pilih satu bulan atau satu tahun pada filter Periode sebelum mengunduh laporan.");
@@ -1382,13 +1413,18 @@
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
     doc.text("LAPORAN " + fundName.toUpperCase(), pageWidth / 2, headerBottomY + 7, { align: "center" });
-    doc.text(reportNameLine, pageWidth / 2, headerBottomY + 13.5, {
+    // Kas PHBI: kegiatan dan tanggalnya tampil tepat di bawah judul laporan.
+    const eventOffset = phbiEventLine ? 6.5 : 0;
+    if (phbiEventLine) {
+      doc.text(phbiEventLine, pageWidth / 2, headerBottomY + 13.5, { align: "center", maxWidth: contentWidth });
+    }
+    doc.text(reportNameLine, pageWidth / 2, headerBottomY + 13.5 + eventOffset, {
       align: "center",
       maxWidth: contentWidth
     });
-    doc.text(`PERIODE ${period.toUpperCase()}`, pageWidth / 2, headerBottomY + 20, { align: "center" });
+    doc.text(`PERIODE ${period.toUpperCase()}`, pageWidth / 2, headerBottomY + 20 + eventOffset, { align: "center" });
 
-    const tableStartY = headerBottomY + 26;
+    const tableStartY = headerBottomY + 26 + eventOffset;
     if (typeof doc.autoTable === "function") {
       doc.autoTable({
         startY: tableStartY,
@@ -1509,7 +1545,8 @@
 
     const safePeriod = period.replace(/[^a-z0-9-]/gi, "_");
     const safeName = String(mosqueProfile.name || "Masjid").replace(/[^a-z0-9-]/gi, "_");
-    doc.save(`Laporan_${fundName.replaceAll(" ", "_")}_${safeName}_${safePeriod}.pdf`);
+    const eventFileName = fund === "PHBI" ? "_" + phbiEventNames[selectedPhbiEvent].replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "") : "";
+    doc.save(`Laporan_${fundName.replaceAll(" ", "_")}${eventFileName}_${safeName}_${safePeriod}.pdf`);
   }
 
   async function login(event) {
@@ -1845,6 +1882,7 @@
       $("exportPdfBtn").textContent = "Unduh PDF " + fundNames[activeFund];
       renderTable();
     }
+    updatePhbiControls();
 
     document.querySelectorAll("[data-page]").forEach((page) => {
       page.hidden = page.id !== selected;
@@ -1918,7 +1956,14 @@
     function updateReportButton() {
       const name = fundNames[$("fundFilter").value];
       $("exportPdfBtn").textContent = name ? "Unduh PDF " + name : "Unduh PDF per Kas";
+      updatePhbiControls();
     }
+    $("phbiSubmenu").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-phbi-event]");
+      if (!button) return;
+      selectedPhbiEvent = button.dataset.phbiEvent;
+      updatePhbiControls();
+    });
     $("fundFilter").addEventListener("change", () => {
       updateReportButton();
       renderTable();
@@ -1950,6 +1995,7 @@
     $("currentYear").textContent = new Date().getFullYear();
     $("transactionDate").value = getJakartaDateInputValue();
     $("reportPrintDate").value = getJakartaDateInputValue();
+    $("phbiEventDate").value = getJakartaDateInputValue();
     updatePartyNameLabel();
     bindEvents();
     renderPage();

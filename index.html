@@ -329,8 +329,18 @@
             Tanggal cetak laporan
             <input id="reportPrintDate" type="date" required>
           </label>
+          <label id="phbiEventDateField" class="print-date-field hidden" for="phbiEventDate">
+            Tanggal kegiatan
+            <input id="phbiEventDate" type="date">
+          </label>
           <button id="exportPdfBtn" class="btn btn-outline" type="button">Unduh PDF per Kas</button>
         </div>
+      </div>
+
+      <div id="phbiSubmenu" class="phbi-submenu hidden" role="group" aria-label="Kegiatan PHBI untuk laporan">
+        <span class="phbi-submenu-label">Kegiatan PHBI (untuk cetak laporan)</span>
+        <button type="button" class="phbi-tab" data-phbi-event="MAULID_NABI" aria-pressed="false">Maulid Nabi</button>
+        <button type="button" class="phbi-tab" data-phbi-event="ISRO_MIRAJ" aria-pressed="false">Isro' Mi'raj</button>
       </div>
 
       <div class="filters"><label class="hidden">Kas<select id="fundFilter" disabled><option value="all">Semua kas</option><option value="DKM">Kas DKM</option><option value="PEMBANGUNAN">Kas Pembangunan</option><option value="PHBI">Kas PHBI</option></select></label>
@@ -409,7 +419,7 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=al-ikhlas-premium-1"></script>
+  <script src="app.js?v=al-ikhlas-premium-2"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       if (window.lucide) window.lucide.createIcons();
