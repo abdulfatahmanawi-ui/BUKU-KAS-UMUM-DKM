@@ -488,6 +488,231 @@
     nameRequired: "Nama mustahik wajib diisi.", emptyText: "Belum ada data penerima untuk tahun ini."
   });
 
+
+  /* ---------- Laporan (Form C) ---------- */
+  const LAP_ROWS = [
+    { n: "1", u: "Zakat Fitrah", k: "fitrah", head: true },
+    { u: "Asnaf non amilin", k: "fitrah", p: [87.5, 0, 0, 0], tot: 87.5 },
+    { u: "Asnaf amilin", k: "fitrah", p: [9.5, 3, 0, 0], tot: 12.5 },
+    { n: "2", u: "BIS Ramadhan", k: "bis", head: true },
+    { u: "Penguatan kelembagaan OPZ", k: "bis", p: [5, 10, 35, 50], tot: 100 },
+    { n: "3", u: "Zakat Mal Ramadhan", k: "mal", p: [100, 0, 0, 0], tot: 100, bold: true },
+    { n: "4", u: "Infak Umum", k: "infak", p: [100, 0, 0, 0], tot: 100, bold: true },
+    { n: "5", u: "Fidyah", k: "fidyah", p: [100, 0, 0, 0], tot: 100, bold: true }
+  ];
+  const fz = (v) => (num(v) ? nf.format(num(v)) : "-");
+  const pc = (v) => (num(v) ? String(v).replace(".", ",") + "%" : "");
+
+  function buildReport(t) {
+    const level = [0, 0, 0, 0];
+    let totalAll = 0, totalDist = 0;
+    const rows = LAP_ROWS.map((r) => {
+      const base = num(t[r.k]);
+      if (r.n) totalAll += base;
+      if (r.head) return { ...r, base };
+      const amt = r.p.map((p) => Math.round(base * p / 100));
+      amt.forEach((a, i) => { level[i] += a; });
+      const row = amt.reduce((a, b) => a + b, 0);
+      totalDist += row;
+      return { ...r, base, amt, row };
+    });
+    return { rows, level, totalAll, totalDist };
+  }
+
+  function createLaporan() {
+    let report = null, counts = { muzaki: 0, mustahik: 0 }, loading = false;
+    const onPage = () => currentPage() === "upz-laporan";
+
+    function reportHtml(rep) {
+      const body = rep.rows.map((r) => {
+        if (r.head) return `<tr><td>${r.n}</td><td class="l b">${r.u}</td><td class="r b">${fz(r.base)}</td>${'<td class="x"></td>'.repeat(8)}<td></td><td></td></tr>`;
+        const cells = r.p.map((p, i) => (p || i === 0) ? `<td class="r">${pc(p)}</td><td class="r">${fz(r.amt[i])}</td>` : '<td class="x"></td><td class="x"></td>').join("");
+        return `<tr class="${r.bold ? "b" : ""}"><td>${r.n || ""}</td><td class="l ${r.n ? "b" : "ind"}">${r.u}</td><td class="r">${fz(r.base)}</td>${cells}<td class="r">${pc(r.tot)}</td><td class="r">${fz(r.row)}</td></tr>`;
+      }).join("");
+      const foot = `<tr class="b"><td></td><td class="r">JUMLAH</td><td class="r">${fz(rep.totalAll)}</td>${rep.level.map((a) => `<td></td><td class="r">${fz(a)}</td>`).join("")}<td></td><td class="r">${fz(rep.totalDist)}</td></tr>`;
+      return `<table class="upz-lap-table"><thead>
+        <tr><th rowspan="3">NO</th><th rowspan="3">URAIAN</th><th rowspan="3">TOTAL<br>PENGUMPULAN<br>(100%) Rp.</th><th colspan="10">PENDISTRIBUSIAN</th></tr>
+        <tr><th colspan="2">DKM/RT/RW</th><th colspan="2">Desa/Kelurahan</th><th colspan="2">Kecamatan</th><th colspan="2">Kabupaten</th><th rowspan="2">%</th><th rowspan="2">Jumlah<br>Pendistribusian Rp.</th></tr>
+        <tr>${"<th>%</th><th>Jumlah Rp.</th>".repeat(4)}</tr></thead><tbody>${body}${foot}</tbody></table>`;
+    }
+
+    function show(titleYear) {
+      if (!report) return;
+      $("lapTitle").textContent = titleYear ? `Laporan Tahun ${titleYear}` : "Laporan";
+      $("lapMuzaki").textContent = nf.format(counts.muzaki);
+      $("lapMustahik").textContent = nf.format(counts.mustahik);
+      $("lapTotal").textContent = rp(report.totalAll);
+      $("lapDkm").textContent = rp(report.level[0]);
+      $("lapTable").innerHTML = reportHtml(report);
+    }
+
+    function applyVisibility() {
+      const admin = Boolean(ctx().isAdmin);
+      $("lapTools").classList.toggle("hidden", !admin);
+      $("lapYearPanel").classList.toggle("hidden", !admin);
+    }
+
+    const totalsOf = (list) => { const a = sums(list); return { fitrah: a.fitrah, bis: a.bis, mal: a.mal, infak: a.infak, fidyah: a.fidyah }; };
+
+    async function load() {
+      applyVisibility();
+      const c = ctx();
+      if (!onPage() || !c.client || loading) return;
+      loading = true;
+      try {
+        if (c.isAdmin) {
+          if (!settings) { if (!settingsFailed) loadSettings(); return; }
+          const th = settings.tahun_hijriah;
+          const [m, h] = await Promise.all([
+            c.client.from("upz_muzaki").select("*").eq("tahun_hijriah", th),
+            c.client.from("upz_mustahik").select("id", { count: "exact", head: true }).eq("tahun_hijriah", th)
+          ]);
+          if (m.error) throw m.error;
+          if (h.error) throw h.error;
+          counts = { muzaki: (m.data || []).length, mustahik: h.count || 0 };
+          report = buildReport(totalsOf(m.data || []));
+          $("lapYearNote").textContent = `Tahun ${th} H / ${settings.tahun_masehi} M · ${settings.nama_dkm || "Nama DKM/RW belum diisi"}`;
+          show(`${th} H / ${settings.tahun_masehi} M`);
+        } else {
+          const [m, h] = await Promise.all([c.client.rpc("upz_public_perhimpunan"), c.client.rpc("upz_public_pendistribusian")]);
+          if (m.error) throw m.error;
+          if (h.error) throw h.error;
+          const rowsM = m.data?.rows || [];
+          counts = { muzaki: rowsM.length, mustahik: (h.data?.rows || []).length };
+          report = buildReport(totalsOf(rowsM));
+          const th = m.data?.tahun_hijriah;
+          show(th ? `${th} H / ${m.data.tahun_masehi} M` : "");
+        }
+      } catch (err) {
+        console.error("Laporan UPZ:", err);
+        $("lapTable").innerHTML = '<p class="empty-state">Data belum dapat dimuat. Pastikan SQL Perhimpunan, Pendistribusian dan akses publik sudah dijalankan di Supabase.</p>';
+      } finally {
+        loading = false;
+      }
+    }
+
+    async function printForm(blank) {
+      const c = ctx();
+      if (!window.jspdf?.jsPDF) { c.showToast?.("Komponen PDF belum termuat. Muat ulang aplikasi."); return; }
+      if (!settings) return;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+      if (typeof doc.autoTable !== "function") { c.showToast?.("Komponen tabel PDF belum termuat. Muat ulang aplikasi."); return; }
+      const W = doc.internal.pageSize.getWidth();
+      const M = 10;
+      const s = settings;
+      const rep = blank ? buildReport({}) : (report || buildReport({}));
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "italic"); doc.setFontSize(10);
+      doc.text("form C DKM/RT/RW", M, 9);
+
+      const logo = await c.loadImageAsPngDataUrl?.("baznas-logo.png?v=2", 800);
+      if (logo) doc.addImage(logo, "PNG", M + 2, 14, 30.4, 22);
+
+      doc.setFont("helvetica", "bold"); doc.setFontSize(9.5);
+      [
+        "LAPORAN PENGUMPULAN DAN PENDISTRIBUSIAN",
+        "DANA ZAKAT FITRAH, BIS RAMADHAN, ZAKAT MAL, INFAK UMUM DAN FIDYAH",
+        `TAHUN ${s.tahun_hijriah} H / ${s.tahun_masehi} M`,
+        "(WAJIB DISAMPAIKAN KEPADA UPZ DESA/KELURAHAN)"
+      ].forEach((t, i) => doc.text(t, M + 38, 22 + i * 5.5));
+
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8.5);
+      const kv = [
+        ["DKM/RT/RW", blank ? "" : s.nama_dkm],
+        ["Desa/Kel", blank ? "" : s.desa],
+        ["Kecamatan", blank ? "" : s.kecamatan],
+        ["Nama/No. HP Ketua UPZ", blank ? "" : [s.ketua_upz, s.no_hp].filter(Boolean).join(" / ")],
+        ["Jumlah Muzaki", blank ? "" : String(counts.muzaki)],
+        ["Jumlah Mustahik", blank ? "" : String(counts.mustahik)]
+      ];
+      kv.forEach(([k, v], i) => {
+        const y = 14 + i * 5;
+        doc.text(k, 205, y); doc.text(":", 242, y); doc.text(String(v || ""), 245, y);
+      });
+
+      const H = { halign: "center", valign: "middle" };
+      const X = { fillColor: [140, 140, 140] };
+      const R = { halign: "right" };
+      const body = rep.rows.map((r) => {
+        if (r.head) {
+          return [{ content: r.n, styles: { halign: "center" } }, { content: r.u, styles: { fontStyle: "bold" } }, { content: fz(r.base), styles: { ...R, fontStyle: "bold" } },
+            ...Array.from({ length: 8 }, () => ({ content: "", styles: X })), "", ""];
+        }
+        const st = r.bold ? { fontStyle: "bold" } : {};
+        const cells = [];
+        r.p.forEach((p, i) => {
+          if (p || i === 0) { cells.push({ content: pc(p), styles: { ...R, ...st } }, { content: fz(r.amt[i]), styles: { ...R, ...st } }); }
+          else cells.push({ content: "", styles: X }, { content: "", styles: X });
+        });
+        return [
+          { content: r.n || "", styles: { halign: "center", ...st } },
+          { content: r.u, styles: r.n ? { fontStyle: "bold" } : { cellPadding: { left: 4, top: 1.6, right: 1.6, bottom: 1.6 } } },
+          { content: fz(r.base), styles: { ...R, ...st } }, ...cells,
+          { content: pc(r.tot), styles: { ...R, ...st } }, { content: fz(r.row), styles: { ...R, ...st } }
+        ];
+      });
+      const bs = { fontStyle: "bold", ...R };
+      body.push([
+        "", { content: "JUMLAH", styles: bs }, { content: fz(rep.totalAll), styles: bs },
+        ...rep.level.flatMap((a) => ["", { content: fz(a), styles: bs }]), "", { content: fz(rep.totalDist), styles: bs }
+      ]);
+
+      doc.autoTable({
+        startY: 44,
+        margin: { left: M, right: M, bottom: 10 },
+        theme: "grid",
+        head: [
+          [{ content: "NO", rowSpan: 3, styles: H }, { content: "URAIAN", rowSpan: 3, styles: H }, { content: "TOTAL PENGUMPULAN (100%) Rp.", rowSpan: 3, styles: H }, { content: "PENDISTRIBUSIAN", colSpan: 10, styles: { ...H, fontSize: 10 } }],
+          [{ content: "DKM/RT/RW", colSpan: 2, styles: H }, { content: "Desa/Kelurahan", colSpan: 2, styles: H }, { content: "Kecamatan", colSpan: 2, styles: H }, { content: "Kabupaten", colSpan: 2, styles: H }, { content: "%", rowSpan: 2, styles: H }, { content: "Jumlah Pendistribusian Rp.", rowSpan: 2, styles: H }],
+          ["%", "Jumlah Rp.", "%", "Jumlah Rp.", "%", "Jumlah Rp.", "%", "Jumlah Rp."].map((t) => ({ content: t, styles: H })),
+          ["1", "2", "", "4", "5", "6", "7", "8", "9", "10", "11", "", ""].map((t) => ({ content: t, styles: { ...H, fontSize: 6, minCellHeight: 4, cellPadding: 0.5 } }))
+        ],
+        body,
+        styles: { font: "helvetica", fontSize: 8, textColor: [0, 0, 0], lineColor: [0, 0, 0], lineWidth: 0.3, cellPadding: 1.6, minCellHeight: 7, valign: "middle" },
+        headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "normal", lineWidth: 0.3, lineColor: [0, 0, 0] },
+        bodyStyles: { fillColor: [255, 255, 255] },
+        columnStyles: {
+          0: { cellWidth: 8 }, 1: { cellWidth: 48 }, 2: { cellWidth: 28 },
+          3: { cellWidth: 14 }, 4: { cellWidth: 24 }, 5: { cellWidth: 14 }, 6: { cellWidth: 24 },
+          7: { cellWidth: 14 }, 8: { cellWidth: 24 }, 9: { cellWidth: 14 }, 10: { cellWidth: 24 },
+          11: { cellWidth: 14 }, 12: { cellWidth: 27 }
+        }
+      });
+
+      const pageH = doc.internal.pageSize.getHeight();
+      let y = (doc.lastAutoTable?.finalY || 80) + 8;
+      if (y + 40 > pageH - 8) { doc.addPage(); y = 20; }
+      const sx = W - M - 60, lx = M + 20;
+      doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+      doc.text(`${s.desa || "........."}, ${longDate($("lapTglLaporan").value)}`, sx + 30, y, { align: "center" });
+      doc.text("Mengetahui,", lx + 30, y, { align: "center" });
+      doc.text("Ketua RW 004", lx + 30, y + 5, { align: "center" });
+      doc.text("Ketua UPZ", sx + 30, y + 5, { align: "center" });
+      const ny = y + 28;
+      doc.setFont("helvetica", "bold");
+      const rwName = blank ? "" : (s.ketua_rw || "");
+      const upzName = blank ? "" : (s.ketua_upz || "");
+      doc.text(rwName || "(                                   )", lx + 30, ny, { align: "center" });
+      doc.text(upzName || "(                                   )", sx + 30, ny, { align: "center" });
+      if (rwName) { doc.setLineWidth(0.3); doc.line(lx + 30 - doc.getTextWidth(rwName) / 2, ny + 1, lx + 30 + doc.getTextWidth(rwName) / 2, ny + 1); }
+      if (upzName) { doc.setLineWidth(0.3); doc.line(sx + 30 - doc.getTextWidth(upzName) / 2, ny + 1, sx + 30 + doc.getTextWidth(upzName) / 2, ny + 1); }
+      doc.save(`Form-C-UPZ-${blank ? "Kosong-" : ""}${s.tahun_hijriah}H.pdf`);
+    }
+
+    function bind() {
+      $("lapPrintBtn").addEventListener("click", () => printForm(false));
+      $("lapPrintBlankBtn").addEventListener("click", () => printForm(true));
+      $("lapTglLaporan").value = todayJakarta();
+      document.addEventListener("kas:auth", () => { report = null; load(); });
+      document.addEventListener("kas:page", () => load());
+      document.addEventListener("upz:settings", () => load());
+      applyVisibility();
+    }
+    return { bind };
+  }
+  const laporan = createLaporan();
+
   function bind() {
     $("upzSettingsForm").addEventListener("submit", saveSettings);
     $("upzTahunH").addEventListener("input", () => {
@@ -496,6 +721,7 @@
     });
     perhimpunan.bind();
     pendistribusian.bind();
+    laporan.bind();
     const maybeLoadSettings = () => { if (ctx().isAdmin && (currentPage() === "profil" || currentPage().startsWith("upz-"))) loadSettings(); };
     document.addEventListener("kas:auth", () => { if (!ctx().isAdmin) settings = null; maybeLoadSettings(); });
     document.addEventListener("kas:page", maybeLoadSettings);

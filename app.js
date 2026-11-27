@@ -1915,7 +1915,7 @@
     const fundRoutes = { "kas-dkm": "DKM", "kas-pembangunan": "PEMBANGUNAN", "kas-phbi-maulid": "PHBI", "kas-phbi-isro": "PHBI" };
     const activeFund = fundRoutes[requested];
     const selected = activeFund ? "transaksi" :
-      (["dashboard", "jadwal-sholat", "profil", "upz-perhimpunan", "upz-pendistribusian"].includes(requested) ? requested : "dashboard");
+      (["dashboard", "jadwal-sholat", "profil", "upz-perhimpunan", "upz-pendistribusian", "upz-laporan"].includes(requested) ? requested : "dashboard");
 
     if (activeFund) {
       const label = fundLabel(activeFund);
