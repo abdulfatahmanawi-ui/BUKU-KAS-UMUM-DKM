@@ -1178,3 +1178,20 @@ input,select,textarea{border-radius:10px}.table-wrap{border-radius:13px}.toast{b
 .upz-page .upz-stat{padding:14px 16px}
 .upz-page .upz-stat b{font-size:20px;white-space:nowrap;overflow-wrap:normal}
 }
+/* Perbaikan susunan kartu ringkasan (ikon Lucide berubah menjadi svg) */
+.upz-page .upz-stat>i,.upz-page .upz-stat>svg{grid-column:1;grid-row:1/3}
+.upz-page .upz-stat>svg{box-sizing:content-box;width:20px;height:20px;padding:11px;border-radius:12px;background:#e8f3ec;color:var(--green-800,#176746)}
+.upz-page .upz-stat.gold>svg{background:#f7f0dc;color:#9a7a2c}
+.upz-page .upz-stat.money>svg{background:rgba(255,255,255,.16);color:#fff}
+.upz-page .upz-stat>span{grid-column:2;grid-row:1}
+.upz-page .upz-stat>b{grid-column:2;grid-row:2;white-space:nowrap}
+/* Ringkasan sumber uang pada kartu Total Uang */
+.upz-src-bar{grid-column:1/-1;display:flex;gap:2px;height:8px;margin-top:14px;border-radius:99px;overflow:hidden}
+.upz-src-bar em{display:block;height:100%}
+.upz-src{grid-column:1/-1;list-style:none;margin:12px 0 0;padding:12px 0 0;border-top:1px solid rgba(255,255,255,.22);display:grid;gap:8px}
+.upz-src li{display:grid;grid-template-columns:10px 1fr auto auto;align-items:center;gap:8px;font-size:12.5px;color:rgba(255,255,255,.92)}
+.upz-src .d{width:9px;height:9px;border-radius:50%}
+.upz-src strong{font-weight:600}
+.upz-src small{padding:1px 7px;border-radius:99px;background:rgba(255,255,255,.16);font-size:10.5px;font-weight:700}
+.upz-src .v{font-style:normal;font-weight:800;min-width:92px;text-align:right}
+@media(max-width:640px){.upz-src li{grid-template-columns:10px 1fr auto;font-size:12px}.upz-src small{display:none}.upz-src .v{min-width:0}}

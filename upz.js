@@ -186,6 +186,17 @@
       }
     }
 
+    function renderSrc(sfx, all) {
+      const bar = el(sfx + "SrcBar"), box = el(sfx + "Src");
+      if (!bar || !box) return;
+      const items = [["Zakat Fitrah (uang)", all.fitrah, "#e4cf9a"], ["BIS Ramadhan", all.bis, "#8fd6ae"], ["Zakat Mal", all.mal, "#ffffff"], ["Infak Umum", all.infak, "#c9a65b"], ["Fidyah", all.fidyah, "#5fb38a"]];
+      const sum = items.reduce((t, x) => t + num(x[1]), 0);
+      bar.hidden = box.hidden = !sum;
+      if (!sum) { bar.innerHTML = box.innerHTML = ""; return; }
+      bar.innerHTML = items.map((x) => num(x[1]) ? `<em style="width:${num(x[1]) / sum * 100}%;background:${x[2]}"></em>` : "").join("");
+      box.innerHTML = items.filter((x) => num(x[1])).map((x) => `<li><em class="d" style="background:${x[2]}"></em><strong>${x[0]}</strong><small>${(num(x[1]) / sum * 100).toFixed(1).replace(".", ",")}%</small><em class="v">${rp(x[1])}</em></li>`).join("");
+    }
+
     function renderPublic(d) {
       const list = Array.isArray(d.rows) ? d.rows : [];
       const th = d.tahun_hijriah, tm = d.tahun_masehi;
@@ -195,6 +206,7 @@
       el("PubJiwa").textContent = nf.format(all.jiwa);
       el("PubBeras").textContent = nf1.format(all.beras);
       el("PubTotal").textContent = rp(all.jumlah);
+      renderSrc("Pub", all);
       if (!list.length) { el("PubList").innerHTML = `<p class="empty-state">${cfg.emptyText}</p>`; return; }
       const f = (v) => (num(v) ? nf.format(num(v)) : "-");
       const body = list.map((r, i) => `<tr><td>${i + 1}</td><td>${r.rt || r.rw ? `${esc(r.rt || "-")}/${esc(r.rw || "-")}` : "-"}</td><td>${f(r.jumlah_jiwa)}</td><td>${f(r.zakat_fitrah_uang)}</td><td>${num(r.zakat_fitrah_beras) ? nf1.format(num(r.zakat_fitrah_beras)) : "-"}</td><td>${f(r.bis_ramadhan)}</td><td>${f(r.zakat_mal)}</td><td>${f(r.infak_umum)}</td><td>${f(r.fidyah)}</td><td><b>${nf.format(total(r))}</b></td></tr>`).join("");
@@ -216,6 +228,7 @@
       el("SumJiwa").textContent = nf.format(all.jiwa);
       el("SumBeras").textContent = nf1.format(all.beras);
       el("SumTotal").textContent = rp(all.jumlah);
+      renderSrc("Sum", all);
 
       const list = filtered();
       const box = el("List");
