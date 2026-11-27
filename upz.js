@@ -310,7 +310,7 @@
       fmt(r.zakat_fitrah_uang), num(r.zakat_fitrah_beras) ? nf1.format(num(r.zakat_fitrah_beras)) : "",
       fmt(r.bis_ramadhan), fmt(r.zakat_mal), fmt(r.infak_umum), fmt(r.fidyah), fmt(total(r))
     ]);
-    while (body.length < 10) body.push(["", "", "", "", "", "", "", "", "", "", "", "", ""]);
+    while (blank && body.length < 10) body.push(["", "", "", "", "", "", "", "", "", "", "", "", ""]);
 
     const foot = [];
     if (!blank && data.length) {
@@ -379,11 +379,12 @@
     // Titimangsa dan tanda tangan
     const pageH = doc.internal.pageSize.getHeight();
     let y = (doc.lastAutoTable?.finalY || 80) + 10;
-    if (y + 46 > pageH - 8) { doc.addPage(); y = 20; }
+    if (y + 54 > pageH - 8) { doc.addPage(); y = 20; }
     const sx = W - M - 60;       // blok kanan: Ketua UPZ
     const lx = M + 20;           // blok kiri: Ketua RW
     doc.setFont("helvetica", "normal"); doc.setFontSize(10);
-    doc.text(`${s.desa || "........."}, ${longDate($("upzTglLaporan").value)}`, sx + 30, y, { align: "center" });
+    doc.text(`${s.desa || "........."}, ${longDate($("upzTglLaporan").value)}`, W / 2, y, { align: "center" });
+    y += 7;
     doc.text("Mengetahui,", lx + 30, y + 6, { align: "center" });
     doc.text("Ketua RW 004", lx + 30, y + 11, { align: "center" });
     doc.text("Ketua UPZ", sx + 30, y + 11, { align: "center" });
