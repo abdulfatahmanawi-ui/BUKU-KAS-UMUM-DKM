@@ -644,14 +644,18 @@
     const select = $("monthFilter");
     const current = select.value || "all";
     const months = [...new Set(transactions.map((item) => String(item.transaction_date || "").slice(0, 7)).filter(Boolean))].sort().reverse();
+    const years = [...new Set(months.map((month) => month.slice(0, 4)))];
+    const monthOptions = months.map((month) => {
+      const [year, number] = month.split("-");
+      const label = new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric" })
+        .format(new Date(Number(year), Number(number) - 1, 1));
+      return `<option value="${month}">${escapeHtml(label)}</option>`;
+    }).join("");
+    const yearOptions = years.map((year) => `<option value="${year}">Tahun ${year}</option>`).join("");
     select.innerHTML = `<option value="all">Semua periode</option>` +
-      months.map((month) => {
-        const [year, number] = month.split("-");
-        const label = new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric" })
-          .format(new Date(Number(year), Number(number) - 1, 1));
-        return `<option value="${month}">${escapeHtml(label)}</option>`;
-      }).join("");
-    select.value = months.includes(current) || current === "all" ? current : "all";
+      (years.length ? `<optgroup label="Tahunan">${yearOptions}</optgroup>` : "") +
+      (months.length ? `<optgroup label="Bulanan">${monthOptions}</optgroup>` : "");
+    select.value = months.includes(current) || years.includes(current) || current === "all" ? current : "all";
   }
 
   function getFilteredTransactions() {
@@ -1160,7 +1164,7 @@
     const fundName = fundNames[fund];
     const monthValue = $("monthFilter").value;
     if (monthValue === "all") {
-      showToast("Pilih satu bulan pada filter Periode sebelum mengunduh laporan bulanan.");
+      showToast("Pilih satu bulan atau satu tahun pada filter Periode sebelum mengunduh laporan.");
       $("monthFilter").focus();
       return;
     }
@@ -1177,10 +1181,12 @@
       return;
     }
 
+    // Periode bisa bulanan (YYYY-MM) atau tahunan (YYYY).
+    const isYearly = /^\d{4}$/.test(monthValue);
     const [year, month] = monthValue.split("-").map(Number);
-    const monthStart = `${monthValue}-01`;
-    const monthEndDay = new Date(year, month, 0).getDate();
-    const monthEnd = `${monthValue}-${String(monthEndDay).padStart(2, "0")}`;
+    const monthStart = isYearly ? `${year}-01-01` : `${monthValue}-01`;
+    const monthEndDay = isYearly ? 31 : new Date(year, month, 0).getDate();
+    const monthEnd = isYearly ? `${year}-12-31` : `${monthValue}-${String(monthEndDay).padStart(2, "0")}`;
     const fundItems = transactions.filter((item) => item.fund === fund);
     const monthItems = fundItems.filter((item) => {
       const date = String(item.transaction_date || "");
@@ -1204,9 +1210,11 @@
     const contentWidth = pageWidth - margin * 2;
     const totals = calculate(monthItems);
 
-    const period = new Intl.DateTimeFormat("id-ID", {
-      month: "long", year: "numeric", timeZone: "Asia/Jakarta"
-    }).format(new Date(year, month - 1, 1));
+    const period = isYearly
+      ? `Tahun ${year}`
+      : new Intl.DateTimeFormat("id-ID", {
+        month: "long", year: "numeric", timeZone: "Asia/Jakarta"
+      }).format(new Date(year, month - 1, 1));
 
     const [printYear, printMonth, printDay] = selectedPrintDate.split("-").map(Number);
     const printDateValue = new Date(Date.UTC(printYear, printMonth - 1, printDay));
@@ -1264,7 +1272,7 @@
     const reportNameLine = `${mosqueName} ${mosqueLocation}`.toUpperCase();
 
     // Saldo awal hanya memakai transaksi kas yang dipilih sebelum bulan laporan.
-    // Filter jenis dan pencarian di halaman tidak mengurangi isi laporan bulanan.
+    // Filter jenis dan pencarian di halaman tidak mengurangi isi laporan bulanan maupun tahunan.
     const openingBalance = fundItems.reduce((balance, item) => {
       if (!item.transaction_date || item.transaction_date >= monthStart) return balance;
       const amount = Number(item.amount || 0);
@@ -1284,7 +1292,7 @@
       1,
       formatNumericDate(monthStart),
       "",
-      "Sisa Saldo Bulan Lalu",
+      isYearly ? "Sisa Saldo Tahun Lalu" : "Sisa Saldo Bulan Lalu",
       "",
       "",
       rupiah(openingBalance)
